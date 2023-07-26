@@ -17,7 +17,7 @@ app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'pradeepgeddada31@gmail.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'uqaxpsuvvuwsvmjj'  # Replace with your email password
+app.config['MAIL_PASSWORD'] = 'dkjtxrfbelenaebn'  # Replace with your email password
 
 mail = Mail(app)
 
