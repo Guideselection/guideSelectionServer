@@ -17,7 +17,7 @@ app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'pradeepgeddada31@gmail.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'uqaxpsuvvuwsvmjj'  # Replace with your email password
+app.config['MAIL_PASSWORD'] = 'dkjtxrfbelenaebn'  # Replace with your email password
 
 mail = Mail(app)
 
@@ -332,6 +332,84 @@ def check_vacancies(mail):
     result = collection.find_one(filter)
     # print(result)
     return jsonify({"vacancies": result['TOTAL BATCHES']})
+
+
+
+@app.route('/update_vacancies_data', methods=['PUT'])
+def update_vacancies_data():
+    data = request.json  # Assuming the request data is in JSON format
+    # Extract data from the request JSON
+    collection_name = data.get('collection_name')
+    filter_data = data.get('filter_data')
+    updated_data = data.get('updated_data')
+
+    # print(filter_data, updated_data)
+
+    # Update the data in the collection
+    collection = db[collection_name]
+    result = collection.update_one(filter_data, {'$set': updated_data})
+
+    if result.modified_count > 0:
+        return jsonify({"message": "Data updated successfully!"})
+    else:
+        return jsonify({"message": "No matching data found for update."}), 404
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route("/checkSecondMail/<string:mailid>", methods=["GET"])
+def check_second_Person_mail(mailid):
+
+    collection = db.users
+    filter = {"email":mailid}
+    result = collection.find_one(filter)
+    print(result)
+
+    if result:
+        otp = random.randint(100000,999999)
+
+        try:
+            msg = Message(f'Your OTP is {otp}',  # Email subject
+                        sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                        recipients=[mailid])  # Replace with the recipient's email address
+            msg.body = 'This is a test email sent from Flask-Mail'  # Email body
+
+            mail.send(msg)
+
+            return jsonify({'email':result['email'], 'firstTime':result['firstTime'], 'otp':otp})
+        except Exception as e:
+            print(e)
+            return jsonify({'email':result['email'], 'firstTime':result['firstTime']})
+    else:
+        return jsonify({"data":"mail not found"})
+
+
+
+
+@app.route("/delete_user", methods=["POST"])
+def delete_user():
+    data = request.json
+    collection_name = data.get("collection_name")
+    filter = data.get("filter_data")
+    collection = db[collection_name]
+    result = collection.delete_many(filter)
+
+    return jsonify({"deleted":"true"})
+
+
+
+
 
 
 
