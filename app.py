@@ -147,6 +147,14 @@ def generate_token(email):
     return token
 
 
+@app.route('/api/check/<string:mail>', methods=["GET"])
+def check_account_avalable(mail):
+    collection = db.users
+    filter={'email':mail}
+    result = collection.find_one(filter)
+    print(result)
+    return jsonify({"first_time":result['firstTime']})
+
 
 
 
