@@ -153,8 +153,10 @@ def check_account_avalable(mail):
     filter={'email':mail}
     result = collection.find_one(filter)
     print(result)
-    return jsonify({"first_time":result['firstTime']})
-
+    if result:
+        return jsonify({"first_time":result['firstTime']})
+    else:
+        return jsonify({"data":"mail not found"})
 
 
 
