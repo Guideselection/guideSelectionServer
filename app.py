@@ -367,6 +367,14 @@ def add_registered_data():
         return jsonify({"error": "An error occurred during registration","exception":e})
 
 
+@app.route("/rollback_registered_data", methods=["POST"])
+def rollback_registered_data():
+    data = request.json
+    collection = db.registeredUsers
+    result = collection.delete_many(data)
+
+    return jsonify({"deleted":"true"})
+
 
 
 @app.route('/checkVacancies/<string:mail>', methods=['GET'])
