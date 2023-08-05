@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask_cors import CORS
 from flask_mail import Mail, Message
-from pymongo.errors import DuplicateKeyError
+from pymongo.errors import InvalidOperation
 import random
 import jwt
 import datetime
@@ -347,24 +347,23 @@ def add_registered_data():
         # Start a client session
         with client.start_session() as session:
             # Start a transaction
-            session.start_transaction()
+            
+            with session.start_transaction():
 
             # Perform the critical operation
-            new_user = data
-            users_collection.insert_one(new_user, session=session)
+                new_user = data
+                users_collection.insert_one(new_user, session=session)
 
             # Commit the transaction
-            session.commit_transaction()
+            # session.commit_transaction()
 
         return jsonify({'message': 'User registered successfully'}), 201
-    except DuplicateKeyError:
-        # Handle the case when the email is not unique
-        session.abort_transaction()
-        return jsonify({'error': 'Email already registered'}), 409
+    except InvalidOperation as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        # Handle other exceptions if needed
-        session.abort_transaction()
-        return jsonify({'error': 'An error occurred during registration'}), 500
+        return jsonify({"error": "An error occurred during registration"}), 500
+
+
 
 
 @app.route('/checkVacancies/<string:mail>', methods=['GET'])
