@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask_cors import CORS
 from flask_mail import Mail, Message
-from pymongo.errors import InvalidOperation
+from pymongo.errors import InvalidOperation, DuplicateKeyError
 import random
 import jwt
 import datetime
@@ -358,10 +358,13 @@ def add_registered_data():
             # session.commit_transaction()
 
         return jsonify({'message': 'User registered successfully'}), 201
+    except DuplicateKeyError as e:
+        # session.abort_transaction()
+        return jsonify({"error": "Email already registered"})
     except InvalidOperation as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": "An error occurred during registration"}), 500
+        return jsonify({"error": "An error occurred during registration","exception":e})
 
 
 
