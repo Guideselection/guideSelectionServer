@@ -12,6 +12,7 @@ app=Flask(__name__)
 CORS(app)
 
 
+
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Replace with your email server
 app.config['MAIL_PORT'] = 465
@@ -377,7 +378,7 @@ def rollback_registered_data():
 
 
 
-@app.route('/checkVacancies/<string:mail>', methods=['GET'])
+@app.route('/check_Vacancies/<string:mail>', methods=['GET'])
 def check_vacancies(mail):
     collection = db.facultylist
     filter = {'University EMAIL ID':mail}
@@ -420,7 +421,7 @@ def update_vacancies_data():
 
 
 
-@app.route("/checkSecondMail/<string:mailid>", methods=["GET"])
+@app.route("/check_Second_Mail/<string:mailid>", methods=["GET"])
 def check_second_Person_mail(mailid):
 
     collection = db.users
