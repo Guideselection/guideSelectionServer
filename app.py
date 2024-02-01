@@ -270,7 +270,7 @@ def delete_data(id):
 
 
 
-@app.route('/guidelist', methods=['GET'])
+@app.route('/guide_list', methods=['GET'])
 def get_Guide_List():
     collection = db.facultylist
 
@@ -378,7 +378,7 @@ def rollback_registered_data():
 
 
 
-@app.route('/check_Vacancies/<string:mail>', methods=['GET'])
+@app.route('/check_vacancies/<string:mail>', methods=['GET'])
 def check_vacancies(mail):
     collection = db.facultylist
     filter = {'University EMAIL ID':mail}
@@ -421,7 +421,7 @@ def update_vacancies_data():
 
 
 
-@app.route("/check_Second_Mail/<string:mailid>", methods=["GET"])
+@app.route("/check_second_mail/<string:mailid>", methods=["GET"])
 def check_second_Person_mail(mailid):
 
     collection = db.users
