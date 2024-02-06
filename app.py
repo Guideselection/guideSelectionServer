@@ -298,6 +298,7 @@ def get_Guide_List():
 
 
 
+
 @app.route('/create_collection', methods=['POST'])
 def create_collection():
     data = request.json  # Assuming the request data is in JSON format
@@ -312,7 +313,53 @@ def create_collection():
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
 
-    return jsonify({"message": "Collection created and data inserted successfully!", "inserted_id": str(inserted_data.inserted_id)})
+
+                    
+    #Send Mail To Student
+    teamiId = f"CSE-{datetime.now().year % 100}-{collection_data['regNo']%10000}"
+    password = collection_data['password']
+
+    try:
+        msg = Message(f'Project Submission Confirmation',  # Email subject
+                      sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                      recipients=collection_data['mailId'])  # Replace with the recipient's email address
+        msg.html = f"""
+        <html>
+        <body>
+            <p>Dear {collection_data['name']},</p>
+            <p>We are writing to inform you that we have received your project submission successfully. Thank you for your effort and contribution.</p>
+            <b>Project Details:</b><br/>
+            <ul>
+            <li>Project Id - {teamiId}</li>
+            <li>Project Name - {collection_data["projectTitle"]}</li>
+            <li>Project Domain - {collection_data["projectDomain"]}</li>
+            <li>Project Description - {collection_data["projectDesc"]}</li>
+            <li>Guide Name - {collection_data["selectedGuide"]}</li>
+            </ul><br/>
+            
+            <ul>
+            <b>Login Credentials:</b><br/>
+            <li>Project Id - {teamiId}</li>
+            <li>Password: {password}</li>
+            </ul><br/>
+            <p>Our team will review your project thoroughly and get back to you with feedback.
+            Thank you once again for choosing to work with us.</p><br/><br/><br/>
+            <p>Best Regards,</p>
+            <p>School of Computing,</p>
+            <p>Sathyabama Institute of Science & Technology</p>
+        </body>
+        </html>
+        """
+
+        mail.send(msg)
+        return jsonify({"Is_Email_sent":"true"})
+    except Exception as e:
+        print(e)
+        return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!", "inserted_id": str(inserted_data.inserted_id)})
+
+
+    
+
 
 
 
@@ -335,6 +382,10 @@ def updateLoginData():
         return jsonify({"message": "Data updated successfully!"})
     else:
         return jsonify({"message": "No matching data found for update."}), 404
+    
+
+
+
 
 
 @app.route('/add_registered_data', methods=['PUT'])
@@ -357,6 +408,7 @@ def add_registered_data():
 
             # Commit the transaction
             # session.commit_transaction()
+
 
         return jsonify({'message': 'User registered successfully'}), 201
     except DuplicateKeyError as e:
@@ -459,6 +511,9 @@ def delete_user():
     result = collection.delete_many(filter)
 
     return jsonify({"deleted":"true"})
+
+
+
 
 
 
