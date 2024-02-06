@@ -6,7 +6,7 @@ from flask_mail import Mail, Message
 from pymongo.errors import InvalidOperation, DuplicateKeyError
 import random
 import jwt
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app=Flask(__name__)
 CORS(app)
@@ -136,7 +136,7 @@ def update_all_data():
 def generate_token(email):
     # Define the payload for the token (you can include additional claims if needed)
     payload = {'email': email,
-               'exp': datetime.utcnow() + datetime.timedelta(minutes=100)
+               'exp': datetime.utcnow() + timedelta(minutes=100)
                }
 
     # Define the secret key used to sign the token
