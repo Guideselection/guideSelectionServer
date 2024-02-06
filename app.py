@@ -6,7 +6,7 @@ from flask_mail import Mail, Message
 from pymongo.errors import InvalidOperation, DuplicateKeyError
 import random
 import jwt
-import datetime
+from datetime import datetime
 
 app=Flask(__name__)
 CORS(app)
@@ -299,8 +299,8 @@ def get_Guide_List():
 
 
 
-@app.route('/create_collection', methods=['POST'])
-def create_collection():
+@app.route('/create_collection/<string:mailId>', methods=['POST'])
+def create_collection(mailId):
     data = request.json  # Assuming the request data is in JSON format
 
     # Get the collection name and data from the request JSON
@@ -316,13 +316,14 @@ def create_collection():
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{datetime.now().year % 100}-{collection_data['regNo']%10000}"
+    teamiId = f"CSE-{str(datetime.now().year % 100)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
+    print(teamiId, password)
 
     try:
         msg = Message(f'Project Submission Confirmation',  # Email subject
                       sender='pradeepgeddada31@gmail.com',  # Replace with your email address
-                      recipients=collection_data['mailId'])  # Replace with the recipient's email address
+                      recipients=[mailId])  # Replace with the recipient's email address
         msg.html = f"""
         <html>
         <body>
@@ -340,7 +341,7 @@ def create_collection():
             <ul>
             <b>Login Credentials:</b><br/>
             <li>Project Id - {teamiId}</li>
-            <li>Password: {password}</li>
+            <li>Password - {password}</li>
             </ul><br/>
             <p>Our team will review your project thoroughly and get back to you with feedback.
             Thank you once again for choosing to work with us.</p><br/><br/><br/>
