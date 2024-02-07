@@ -208,7 +208,78 @@ def check_data(mailid,password):
     
     elif str(password)==result['password']:
 
-        return jsonify({'is_account_available': "true", "is_password_correct":"true","_id":str(id), "token":token, "first_time":"false", "Is_Email_sent":"false"})
+        # registeredStudentsData = db['registeredStudentsData']
+        # filter = {"mailId":mailid}
+        # print(filter)
+        # studentCompleteData = registeredStudentsData.find(filter)
+        # print(studentCompleteData[0])
+
+        # # Initialize an empty list to store the results
+        # studentData = []
+        # projectDetails = []
+        # projectStatus = []
+        # documentation = []
+
+        # # Iterate over the cursor to extract data
+        # for student in studentData:
+        #     # Do something with each document in the cursor
+        #     if student["team"]:
+        #         studentData.append({
+        #         # "student_id": str(student["_id"]),
+        #             "name": student["name"],
+        #             "team":student["team"],
+        #             "regNo":student["regNo"],
+        #             "phoneNo":student["phoneNo"],
+        #             "p2name":student["p2name"],
+        #             "p2regNo":student["p2regNo"],
+        #             "p2phoneNo":student["p2phoneNo"],
+        #             "p2mailId":student["p2mailId"],
+        #         })
+        #     else:
+        #         studentData.append({
+        #         # "student_id": str(student["_id"]),
+        #             "name": student["name"],
+        #             "team":student["team"],
+        #             "regNo":student["regNo"],
+        #             "phoneNo":student["phoneNo"]
+        #         })
+
+        #     projectDetails.append({
+        #         "projectTitle": student["projectTitle"],
+        #         "projectDesc": student["projectDesc"],
+        #         "projectDomain": student["projectDomain"]
+        #     })
+
+        #     projectStatus.append({
+        #         "documentation": student["status"]["documentation"],
+        #         "ppt": student["status"]["ppt"],
+        #         "guideApproval": student["status"]["guideApproval"],
+        #         "researchPaper": {
+        #             "approval" : student["status"]["researchPaper"]["approval"],
+        #             "communicated" : student["status"]["researchPaper"]["communicated"],
+        #             "accepted" : student["status"]["researchPaper"]["accepted"],
+        #             "payment" : student["status"]["researchPaper"]["payment"]
+        #         }
+        #     })
+
+        #     documentation.append({
+        #         "researchPaper": student["documentation"]["researchPaper"],
+        #         "documentation": student["documentation"]["documentation"],
+        #         "ppt": student["documentation"]["ppt"]
+        #     })
+             
+        #         # Add more fields as needed
+            
+        
+
+
+
+        return jsonify({'is_account_available': "true",
+                            "is_password_correct":"true","_id":str(id),
+                            "token":token,
+                            "first_time":"false",
+                            "Is_Email_sent":"false"
+                        })
 
     else:
         return jsonify({'is_account_available': "true", "is_password_correct":"false",password:result["password"], "first_time":"false", "Is_Email_sent":"false"})
@@ -300,15 +371,36 @@ def get_Guide_List():
 
 
 @app.route('/create_collection/<string:mailId>', methods=['POST'])
-def create_collection(mailId):
+def create_collection_single(mailId):
     data = request.json  # Assuming the request data is in JSON format
 
     # Get the collection name and data from the request JSON
-    collection_name = data.get('collection_name')
+    # collection_name = data.get('collection_name')
     collection_data = data.get('data')
 
     # Create the collection
-    collection = db[collection_name]
+    collection = db["registeredStudentsData"]
+
+    status = {
+        "documentation":False,
+        "ppt":False,
+        "guideApproval":False,
+        "researchPaper":{
+            "approval":False,
+            "communicated":False,
+            "accepted":False,
+            "payment":False
+        }
+    }
+
+    documents = {
+        "researchPaper":None,
+        "documentation":None,
+        "ppt":None
+    }
+
+    collection_data["status"] = status
+    collection_data["documentation"] = documents
 
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
@@ -316,7 +408,7 @@ def create_collection(mailId):
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{str(datetime.now().year % 100)}-{str(int(collection_data['regNo'])%10000)}"
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 2)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
     print(teamiId, password)
 
@@ -361,7 +453,88 @@ def create_collection(mailId):
 
     
 
+@app.route('/create_collection/<string:mailId1>/<string:mailId2>', methods=['POST'])
+def create_collection_duo(mailId1, mailId2):
+    data = request.json  # Assuming the request data is in JSON format
 
+    # Get the collection name and data from the request JSON
+    # collection_name = data.get('collection_name')
+    collection_data = data.get('data')
+
+    status = {
+        "documentation":False,
+        "ppt":False,
+        "guideApproval":False,
+        "researchPaper":{
+            "approval":False,
+            "communicated":False,
+            "accepted":False,
+            "payment":False
+        }
+    }
+
+    documents = {
+        "researchPaper":None,
+        "documentation":None,
+        "ppt":None
+    }
+
+    collection_data["status"] = status
+    collection_data["documentation"] = documents
+
+    # Create the collection
+    collection = db["registeredStudentsData"]
+
+    # Insert data into the collection
+    inserted_data = collection.insert_one(collection_data)
+
+
+                    
+    #Send Mail To Student
+    teamiId = f"CSE-{str(datetime.now().year % 100 +2)}-{str(int(collection_data['regNo'])%10000)}"
+    password = collection_data['password']
+    print(teamiId, password)
+
+    try:
+        msg = Message(f'Project Submission Confirmation',  # Email subject
+                      sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                      recipients=[mailId1, mailId2])  # Replace with the recipient's email address
+        msg.html = f"""
+        <html>
+        <body>
+            <p>Dear {collection_data['name']},</p>
+            <p>We are writing to inform you that we have received your project submission successfully. Thank you for your effort and contribution.</p>
+            <b>Project Details:</b><br/>
+            <ul>
+            <li>Project Id - {teamiId}</li>
+            <li>Project Name - {collection_data["projectTitle"]}</li>
+            <li>Project Domain - {collection_data["projectDomain"]}</li>
+            <li>Project Description - {collection_data["projectDesc"]}</li>
+            <li>Guide Name - {collection_data["selectedGuide"]}</li>
+            </ul><br/>
+            
+            <ul>
+            <b>Login Credentials:</b><br/>
+            <li>Project Id - {teamiId}</li>
+            <li>Password - {password}</li>
+            </ul><br/>
+            <p>Our team will review your project thoroughly and get back to you with feedback.
+            Thank you once again for choosing to work with us.</p><br/><br/><br/>
+            <p>Best Regards,</p>
+            <p>School of Computing,</p>
+            <p>Sathyabama Institute of Science & Technology</p>
+        </body>
+        </html>
+        """
+
+        mail.send(msg)
+        return jsonify({"Is_Email_sent":"true"})
+    except Exception as e:
+        print(e)
+        return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!", "inserted_id": str(inserted_data.inserted_id)})
+
+
+    
 
 
 
@@ -514,7 +687,91 @@ def delete_user():
     return jsonify({"deleted":"true"})
 
 
+@app.route("/studentLogin/getStudentData/<string:mailid>", methods=["POST"])
+def getStudentdata(mailid):
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"mailId":mailid}
+    print(filter)
+    studentCompleteData = registeredStudentsData.find(filter)
+    print(studentCompleteData[0])
 
+    # Initialize an empty list to store the results
+    studentData = []
+    projectDetails = []
+    projectStatus = []
+    documentation = []
+
+
+    # Iterate over the cursor to extract data
+    for student in studentCompleteData:
+        # Do something with each document in the cursor
+        if student["team"]:
+            studentData.append({
+            # "student_id": str(student["_id"]),
+                "name": student["name"],
+                "team":student["team"],
+                "regNo":student["regNo"],
+                "phoneNo":student["phoneNo"],
+                "p2name":student["p2name"],
+                "p2regNo":student["p2regNo"],
+                "p2phoneNo":student["p2phoneNo"],
+                "p2mailId":student["p2mailId"],
+                "selectedGuide":student["selectedGuide"],
+                "selectedGuideMailId":student["selectedGuideMailId"]
+
+
+            })
+        else:
+            studentData.append({
+            # "student_id": str(student["_id"]),
+                "name": student["name"],
+                "team":student["team"],
+                "regNo":student["regNo"],
+                "phoneNo":student["phoneNo"],
+                "selectedGuide":student["selectedGuide"],
+                "selectedGuideMailId":student["selectedGuideMailId"]
+            })
+
+        projectDetails.append({
+            "projectTitle": student["projectTitle"],
+            "projectDesc": student["projectDesc"],
+            "projectDomain": student["projectDomain"]
+        })
+
+        projectStatus.append({
+            "documentation": student["status"]["documentation"],
+            "ppt": student["status"]["ppt"],
+            "guideApproval": student["status"]["guideApproval"],
+            "researchPaper": {
+                "approval" : student["status"]["researchPaper"]["approval"],
+                "communicated" : student["status"]["researchPaper"]["communicated"],
+                "accepted" : student["status"]["researchPaper"]["accepted"],
+                "payment" : student["status"]["researchPaper"]["payment"]
+            }
+        })
+
+        documentation.append({
+            "researchPaper": student["documentation"]["researchPaper"],
+            "documentation": student["documentation"]["documentation"],
+            "ppt": student["documentation"]["ppt"]
+        })
+
+    guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
+    result = db['facultylist'].find(guideFilter)
+    guideImage=""
+    for r in result:
+        guideImage=r["IMAGE"]
+
+
+
+
+    return jsonify({    
+                        "studentData":studentData,
+                        "projectDetails":projectDetails,
+                        "projectStatus":projectStatus,
+                        "documentation":documentation,
+                        "guideImage":guideImage
+                    })
 
 
 
