@@ -495,6 +495,8 @@ def create_collection_duo(mailId1, mailId2):
     password = collection_data['password']
     print(teamiId, password)
 
+    print(mailId1, mailId2)
+
     try:
         msg = Message(f'Project Submission Confirmation',  # Email subject
                       sender='pradeepgeddada31@gmail.com',  # Replace with your email address
@@ -502,7 +504,7 @@ def create_collection_duo(mailId1, mailId2):
         msg.html = f"""
         <html>
         <body>
-            <p>Dear {collection_data['name']},</p>
+            <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
             <p>We are writing to inform you that we have received your project submission successfully. Thank you for your effort and contribution.</p>
             <b>Project Details:</b><br/>
             <ul>
@@ -676,8 +678,8 @@ def check_second_Person_mail(mailid):
 
 
 
-@app.route("/delete_user", methods=["POST"])
-def delete_user():
+@app.route("/update_second_user_credentials", methods=["POST"])
+def update_second_user_credentials():
     data = request.json
     collection_name = data.get("collection_name")
     filter = data.get("filter_data")
