@@ -408,7 +408,7 @@ def create_collection_single(mailId):
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{str(datetime.now().year % 100 + 2)}-{str(int(collection_data['regNo'])%10000)}"
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
     print(teamiId, password)
 
@@ -494,7 +494,7 @@ def create_collection_duo(mailId1, mailId2):
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{str(datetime.now().year % 100 +2)}-{str(int(collection_data['regNo'])%10000)}"
+    teamiId = f"CSE-{str(datetime.now().year % 100 +1)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
     print(teamiId, password)
 
