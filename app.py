@@ -798,11 +798,42 @@ def getStudentsdata(mailid):
 
     facultylist = db["facultylist"]
     filter = {"University EMAIL ID": mailid}
-
+    allStudentMailIds = []
     guide = facultylist.find(filter)
-    print(guide["allStudents"])
+    for g in guide:
+        print(g["allStudents"])
+        allStudentMailIds = g["allStudents"]
 
-    return jsonify({"message":"fetched successfully"})
+    allStudentsData = []
+    registeredStudentsData = db['registeredStudentsData']
+
+    for studentMail in allStudentMailIds:
+        filter = {"mailId":studentMail}
+        studentData = registeredStudentsData.find(filter)
+        for student in studentData:
+            if student["team"]:
+                allStudentsData.append({
+                    "team":student["team"],
+                    "projectId":"CSE-25-1354",
+                    "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "registerNoOne":student["mailId"],
+                    "studentOne":student["name"],
+                    "registerNoTwo":student["p2mailId"],
+                    "studentTwo":student["p2name"],
+                    "projectTitle":student["projectTitle"]})
+            else:
+                 allStudentsData.append({
+                    "team":student["team"],
+                    "projectId":"CSE-25-1354",
+                    "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "registerNoOne":student["mailId"],
+                    "studentOne":student["name"],
+                    "projectTitle":student["projectTitle"]})
+    
+
+    
+
+    return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData })
 
 
     # registeredStudentsData = db['registeredStudentsData']
