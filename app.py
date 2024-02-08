@@ -816,9 +816,9 @@ def getStudentsdata(mailid):
                     "team":student["team"],
                     "projectId":"CSE-25-1354",
                     "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
-                    "registerNoOne":student["mailId"],
+                    "registerNoOne":student["regNo"],
                     "studentOne":student["name"],
-                    "registerNoTwo":student["p2mailId"],
+                    "registerNoTwo":student["p2regNo"],
                     "studentTwo":student["p2name"],
                     "projectTitle":student["projectTitle"]})
             else:
@@ -826,7 +826,7 @@ def getStudentsdata(mailid):
                     "team":student["team"],
                     "projectId":"CSE-25-1354",
                     "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
-                    "registerNoOne":student["mailId"],
+                    "registerNoOne":student["regNo"],
                     "studentOne":student["name"],
                     "projectTitle":student["projectTitle"]})
     
