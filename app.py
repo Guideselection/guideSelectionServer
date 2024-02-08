@@ -715,6 +715,7 @@ def getStudentdata(mailid):
     projectDetails = []
     projectStatus = []
     documentation = []
+    comments = []
 
 
     # Iterate over the cursor to extract data
@@ -771,6 +772,8 @@ def getStudentdata(mailid):
             "ppt": student["documentation"]["ppt"]
         })
 
+        comments.append(student["comments"][0])
+
     guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
     result = db['facultylist'].find(guideFilter)
     guideImage=""
@@ -785,95 +788,106 @@ def getStudentdata(mailid):
                         "projectDetails":projectDetails,
                         "projectStatus":projectStatus,
                         "documentation":documentation,
-                        "guideImage":guideImage
+                        "guideImage":guideImage,
+                        "comments":comments
                     })
 
 
 @app.route("/staffLogin/getStudentsData/<string:mailid>", methods=["POST"])
 def getStudentsdata(mailid):
-    registeredStudentsData = db['registeredStudentsData']
-    filter = {"mailId":mailid}
-    print(filter)
-    studentCompleteData = registeredStudentsData.find(filter)
-    print(studentCompleteData[0])
 
-    # Initialize an empty list to store the results
-    studentData = []
-    projectDetails = []
-    projectStatus = []
-    documentation = []
+    facultylist = db["facultylist"]
+    filter = {"University EMAIL ID": mailid}
+
+    guide = facultylist.find(filter)
+    print(guide["allStudents"])
+
+    return jsonify({"message":"fetched successfully"})
 
 
-    # Iterate over the cursor to extract data
-    for student in studentCompleteData:
-        # Do something with each document in the cursor
-        if student["team"]:
-            studentData.append({
-            # "student_id": str(student["_id"]),
-                "name": student["name"],
-                "team":student["team"],
-                "regNo":student["regNo"],
-                "phoneNo":student["phoneNo"],
-                "p2name":student["p2name"],
-                "p2regNo":student["p2regNo"],
-                "p2phoneNo":student["p2phoneNo"],
-                "p2mailId":student["p2mailId"],
-                "selectedGuide":student["selectedGuide"],
-                "selectedGuideMailId":student["selectedGuideMailId"]
+    # registeredStudentsData = db['registeredStudentsData']
+    # filter = {"mailId":mailid}
+    # print(filter)
+    # studentCompleteData = registeredStudentsData.find(filter)
+    # print(studentCompleteData[0])
+
+    # # Initialize an empty list to store the results
+    # studentData = []
+    # projectDetails = []
+    # projectStatus = []
+    # documentation = []
 
 
-            })
-        else:
-            studentData.append({
-            # "student_id": str(student["_id"]),
-                "name": student["name"],
-                "team":student["team"],
-                "regNo":student["regNo"],
-                "phoneNo":student["phoneNo"],
-                "selectedGuide":student["selectedGuide"],
-                "selectedGuideMailId":student["selectedGuideMailId"]
-            })
-
-        projectDetails.append({
-            "projectTitle": student["projectTitle"],
-            "projectDesc": student["projectDesc"],
-            "projectDomain": student["projectDomain"]
-        })
-
-        projectStatus.append({
-            "documentation": student["status"]["documentation"],
-            "ppt": student["status"]["ppt"],
-            "guideApproval": student["status"]["guideApproval"],
-            "researchPaper": {
-                "approval" : student["status"]["researchPaper"]["approval"],
-                "communicated" : student["status"]["researchPaper"]["communicated"],
-                "accepted" : student["status"]["researchPaper"]["accepted"],
-                "payment" : student["status"]["researchPaper"]["payment"]
-            }
-        })
-
-        documentation.append({
-            "researchPaper": student["documentation"]["researchPaper"],
-            "documentation": student["documentation"]["documentation"],
-            "ppt": student["documentation"]["ppt"]
-        })
-
-    guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
-    result = db['facultylist'].find(guideFilter)
-    guideImage=""
-    for r in result:
-        guideImage=r["IMAGE"]
+    # # Iterate over the cursor to extract data
+    # for student in studentCompleteData:
+    #     # Do something with each document in the cursor
+    #     if student["team"]:
+    #         studentData.append({
+    #         # "student_id": str(student["_id"]),
+    #             "name": student["name"],
+    #             "team":student["team"],
+    #             "regNo":student["regNo"],
+    #             "phoneNo":student["phoneNo"],
+    #             "p2name":student["p2name"],
+    #             "p2regNo":student["p2regNo"],
+    #             "p2phoneNo":student["p2phoneNo"],
+    #             "p2mailId":student["p2mailId"],
+    #             "selectedGuide":student["selectedGuide"],
+    #             "selectedGuideMailId":student["selectedGuideMailId"]
 
 
+    #         })
+    #     else:
+    #         studentData.append({
+    #         # "student_id": str(student["_id"]),
+    #             "name": student["name"],
+    #             "team":student["team"],
+    #             "regNo":student["regNo"],
+    #             "phoneNo":student["phoneNo"],
+    #             "selectedGuide":student["selectedGuide"],
+    #             "selectedGuideMailId":student["selectedGuideMailId"]
+    #         })
+
+    #     projectDetails.append({
+    #         "projectTitle": student["projectTitle"],
+    #         "projectDesc": student["projectDesc"],
+    #         "projectDomain": student["projectDomain"]
+    #     })
+
+    #     projectStatus.append({
+    #         "documentation": student["status"]["documentation"],
+    #         "ppt": student["status"]["ppt"],
+    #         "guideApproval": student["status"]["guideApproval"],
+    #         "researchPaper": {
+    #             "approval" : student["status"]["researchPaper"]["approval"],
+    #             "communicated" : student["status"]["researchPaper"]["communicated"],
+    #             "accepted" : student["status"]["researchPaper"]["accepted"],
+    #             "payment" : student["status"]["researchPaper"]["payment"]
+    #         }
+    #     })
+
+    #     documentation.append({
+    #         "researchPaper": student["documentation"]["researchPaper"],
+    #         "documentation": student["documentation"]["documentation"],
+    #         "ppt": student["documentation"]["ppt"]
+    #     })
+
+    # guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
+    # result = db['facultylist'].find(guideFilter)
+    # guideImage=""
+    # for r in result:
+    #     guideImage=r["IMAGE"]
 
 
-    return jsonify({    
-                        "studentData":studentData,
-                        "projectDetails":projectDetails,
-                        "projectStatus":projectStatus,
-                        "documentation":documentation,
-                        "guideImage":guideImage
-                    })
+
+
+    # return jsonify({    
+    #                     "studentData":studentData,
+    #                     "projectDetails":projectDetails,
+    #                     "projectStatus":projectStatus,
+    #                     "documentation":documentation,
+    #                     "guideImage":guideImage
+    #                 })
 
 
 
