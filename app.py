@@ -479,8 +479,11 @@ def create_collection_duo(mailId1, mailId2):
         "ppt":None
     }
 
+    comments = []
+
     collection_data["status"] = status
     collection_data["documentation"] = documents
+    collection_data["comments"] = comments
 
     # Create the collection
     collection = db["registeredStudentsData"]
@@ -624,10 +627,20 @@ def update_vacancies_data():
     filter_data = data.get('filter_data')
     updated_data = data.get('updated_data')
 
+    collection = db[collection_name]
+    document = collection.find_one(filter_data)
+    if document:
+        if "allStudents" in document:
+            document["allStudents"].append(data.get("student_mailId"))
+        else:
+            document["allStudents"] = [data.get("student_mailId")]
+    updated_data["allStudents"] = document["allStudents"]
+
+
     # print(filter_data, updated_data)
 
     # Update the data in the collection
-    collection = db[collection_name]
+    
     result = collection.update_one(filter_data, {'$set': updated_data})
 
     if result.modified_count > 0:
@@ -775,6 +788,92 @@ def getStudentdata(mailid):
                         "guideImage":guideImage
                     })
 
+
+@app.route("/staffLogin/getStudentsData/<string:mailid>", methods=["POST"])
+def getStudentsdata(mailid):
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"mailId":mailid}
+    print(filter)
+    studentCompleteData = registeredStudentsData.find(filter)
+    print(studentCompleteData[0])
+
+    # Initialize an empty list to store the results
+    studentData = []
+    projectDetails = []
+    projectStatus = []
+    documentation = []
+
+
+    # Iterate over the cursor to extract data
+    for student in studentCompleteData:
+        # Do something with each document in the cursor
+        if student["team"]:
+            studentData.append({
+            # "student_id": str(student["_id"]),
+                "name": student["name"],
+                "team":student["team"],
+                "regNo":student["regNo"],
+                "phoneNo":student["phoneNo"],
+                "p2name":student["p2name"],
+                "p2regNo":student["p2regNo"],
+                "p2phoneNo":student["p2phoneNo"],
+                "p2mailId":student["p2mailId"],
+                "selectedGuide":student["selectedGuide"],
+                "selectedGuideMailId":student["selectedGuideMailId"]
+
+
+            })
+        else:
+            studentData.append({
+            # "student_id": str(student["_id"]),
+                "name": student["name"],
+                "team":student["team"],
+                "regNo":student["regNo"],
+                "phoneNo":student["phoneNo"],
+                "selectedGuide":student["selectedGuide"],
+                "selectedGuideMailId":student["selectedGuideMailId"]
+            })
+
+        projectDetails.append({
+            "projectTitle": student["projectTitle"],
+            "projectDesc": student["projectDesc"],
+            "projectDomain": student["projectDomain"]
+        })
+
+        projectStatus.append({
+            "documentation": student["status"]["documentation"],
+            "ppt": student["status"]["ppt"],
+            "guideApproval": student["status"]["guideApproval"],
+            "researchPaper": {
+                "approval" : student["status"]["researchPaper"]["approval"],
+                "communicated" : student["status"]["researchPaper"]["communicated"],
+                "accepted" : student["status"]["researchPaper"]["accepted"],
+                "payment" : student["status"]["researchPaper"]["payment"]
+            }
+        })
+
+        documentation.append({
+            "researchPaper": student["documentation"]["researchPaper"],
+            "documentation": student["documentation"]["documentation"],
+            "ppt": student["documentation"]["ppt"]
+        })
+
+    guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
+    result = db['facultylist'].find(guideFilter)
+    guideImage=""
+    for r in result:
+        guideImage=r["IMAGE"]
+
+
+
+
+    return jsonify({    
+                        "studentData":studentData,
+                        "projectDetails":projectDetails,
+                        "projectStatus":projectStatus,
+                        "documentation":documentation,
+                        "guideImage":guideImage
+                    })
 
 
 
