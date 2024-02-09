@@ -772,7 +772,8 @@ def getStudentdata(mailid):
             "ppt": student["documentation"]["ppt"]
         })
 
-        comments.append(student["comments"][0])
+
+        comments.append(student["comments"])
 
     guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
     result = db['facultylist'].find(guideFilter)
@@ -789,7 +790,7 @@ def getStudentdata(mailid):
                         "projectStatus":projectStatus,
                         "documentation":documentation,
                         "guideImage":guideImage,
-                        "comments":comments
+                        "comments":comments[0]
                     })
 
 
