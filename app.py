@@ -399,8 +399,11 @@ def create_collection_single(mailId):
         "ppt":None
     }
 
+    comments = []
+
     collection_data["status"] = status
     collection_data["documentation"] = documents
+    collection_data["comments"] = comments
 
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
