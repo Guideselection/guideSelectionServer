@@ -405,13 +405,24 @@ def create_collection_single(mailId):
     collection_data["documentation"] = documents
     collection_data["comments"] = comments
 
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
+    collection_data["teamId"] = teamiId
+
+    users_collection = db["users"]
+    registered_users = db["registeredUsers"]
+    filter = {"email" : mailId}
+    update = {"$set": {"teamId": teamiId}}
+    users_collection.update_one(filter, update)
+    registered_users.update_one(filter, update)
+
+
+
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
 
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
     print(teamiId, password)
 
@@ -491,13 +502,26 @@ def create_collection_duo(mailId1, mailId2):
     # Create the collection
     collection = db["registeredStudentsData"]
 
+
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
+    collection_data["teamId"] = teamiId
+
+    users_collection = db["users"]
+    registered_users = db["registeredUsers"]
+    filter1 = {"email" : mailId1}
+    filter2 = {"email" : mailId2}
+    update = {"$set": {"teamId": teamiId}}
+    users_collection.update_one(filter1, update)
+    registered_users.update_one(filter1, update)
+    users_collection.update_one(filter2, update)
+    registered_users.update_one(filter2, update)
+
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
 
 
                     
     #Send Mail To Student
-    teamiId = f"CSE-{str(datetime.now().year % 100 +1)}-{str(int(collection_data['regNo'])%10000)}"
     password = collection_data['password']
     print(teamiId, password)
 
