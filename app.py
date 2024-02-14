@@ -131,7 +131,7 @@ def update_all_data():
 
 
 
-
+secret_key = 'SathyabamaInstituteOfScienceAndTechnology'
 
 def generate_token(email):
     # Define the payload for the token (you can include additional claims if needed)
@@ -141,12 +141,27 @@ def generate_token(email):
 
     # Define the secret key used to sign the token
     # Make sure to keep this key secure and preferably stored in a configuration file
-    secret_key = 'your-secret-key'
+    
 
     # Generate the token with the payload and secret key
     token = jwt.encode(payload, secret_key, algorithm='HS256')
 
     return token
+
+@app.route("/checkAuthentication/<string:mailId>", methods=["GET"])
+def checkAuthentication(mailId):
+    token = request.headers.get("Authorization")
+    # print(token)
+    try:
+        decoded_token = jwt.decode(token, secret_key, algorithms=['HS256'])
+        email = decoded_token['email']
+        if str(mailId)==str(email):
+            print("Authenticated")
+            return jsonify({"message":"Authenticated"})
+        else:
+            return jsonify({"message":"Token Tampered"})
+    except:
+        return jsonify({"message":"Not Authenticated"})
 
 
 @app.route('/api/check/<string:mail>', methods=["GET"])
@@ -842,6 +857,20 @@ def updateProjectDetails(mailid):
     if updatedResult.modified_count==1:
         return jsonify({"message":"success"})
 
+@app.route("/staffLogin/check/<string:mailId>/<string:password>", methods=["GET"])
+def checkStaffLogin(mailId, password):
+    facultycredentials = db["facultycredentials"]
+    filter = {"mailId": mailId}
+    result = facultycredentials.find_one(filter)
+    print(result)
+    if result:
+        token = generate_token(mailId)
+        if str(password)==result["password"]:
+            return jsonify({"is_account_available":"true", "Is_Password_Correct":"true", "token":token  })
+        else:
+            return jsonify({"is_account_available":"true", "Is_Password_Correct":"false" })
+    else:
+        return jsonify({"is_account_available":"false", "Is_Password_Correct":"false" })
 
 
 @app.route("/staffLogin/getStudentsData/<string:mailid>", methods=["POST"])
