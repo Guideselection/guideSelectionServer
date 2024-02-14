@@ -404,6 +404,7 @@ def create_collection_single(mailId):
     collection_data["status"] = status
     collection_data["documentation"] = documents
     collection_data["comments"] = comments
+    collection_data["editProjectDetails"] = False
 
     teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
     collection_data["teamId"] = teamiId
@@ -498,6 +499,7 @@ def create_collection_duo(mailId1, mailId2):
     collection_data["status"] = status
     collection_data["documentation"] = documents
     collection_data["comments"] = comments
+    collection_data["editProjectDetails"] = False
 
     # Create the collection
     collection = db["registeredStudentsData"]
@@ -760,6 +762,7 @@ def getStudentdata(mailid):
                 "p2phoneNo":student["p2phoneNo"],
                 "p2mailId":student["p2mailId"],
                 "teamId":student["teamId"],
+                "editProjectDetails":student["editProjectDetails"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
 
@@ -773,6 +776,7 @@ def getStudentdata(mailid):
                 "regNo":student["regNo"],
                 "phoneNo":student["phoneNo"],
                 "teamId":student["teamId"],
+                "editProjectDetails":student["editProjectDetails"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
