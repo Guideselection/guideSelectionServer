@@ -199,7 +199,7 @@ def check_data(mailid,password):
 
                 mail.send(msg)
 
-                return jsonify({"is_account_available":"true", "Is_Email_sent":"true","_id":str(id), "OTP":otp, "token":token, "token_for_first_time":tokenforfirsttime ,  "first_time":"true"})
+                return jsonify({"is_account_available":"true", "Is_Email_sent":"true","_id":str(id), "OTP":otp, "token":token, "token_for_first_time":tokenforfirsttime , "name":result["Full Name"], "regNo":result["regNo"], "phoneNo":result["Mobile Number"], "section":result["section"],  "first_time":"true"})
             except Exception as e:
                 print(e)
                 return jsonify({"is_account_available":"true" ,"_id":str(id), "Is_Email_sent":"false", "first_time":"true"})
