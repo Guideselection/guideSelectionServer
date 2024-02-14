@@ -829,6 +829,21 @@ def getStudentdata(mailid):
                     })
 
 
+
+@app.route("/studentLogin/updateProjectDetails/<string:mailid>", methods=["POST"])
+def updateProjectDetails(mailid):
+    updatedData = request.json
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"mailId":mailid}
+    print(filter)
+    updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
+    updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+
+    if updatedResult.modified_count==1:
+        return jsonify({"message":"success"})
+
+
+
 @app.route("/staffLogin/getStudentsData/<string:mailid>", methods=["POST"])
 def getStudentsdata(mailid):
 
