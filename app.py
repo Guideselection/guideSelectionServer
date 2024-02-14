@@ -708,7 +708,7 @@ def check_second_Person_mail(mailid):
 
             mail.send(msg)
 
-            return jsonify({'email':result['email'], 'firstTime':result['firstTime'], 'otp':otp})
+            return jsonify({'email':result['email'], 'firstTime':result['firstTime'] , "name":result["Full Name"], "regNo":result["regNo"], "phoneNo":result["Mobile Number"], "section":result["section"], 'otp':otp})
         except Exception as e:
             print(e)
             return jsonify({'email':result['email'], 'firstTime':result['firstTime']})
