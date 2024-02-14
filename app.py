@@ -759,6 +759,7 @@ def getStudentdata(mailid):
                 "p2regNo":student["p2regNo"],
                 "p2phoneNo":student["p2phoneNo"],
                 "p2mailId":student["p2mailId"],
+                "teamId":student["teamId"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
 
@@ -771,6 +772,7 @@ def getStudentdata(mailid):
                 "team":student["team"],
                 "regNo":student["regNo"],
                 "phoneNo":student["phoneNo"],
+                "teamId":student["teamId"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
@@ -842,7 +844,7 @@ def getStudentsdata(mailid):
             if student["team"]:
                 allStudentsData.append({
                     "team":student["team"],
-                    "projectId":"CSE-25-1354",
+                    "teamId":student["teamId"],
                     "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
                     "registerNoOne":student["regNo"],
                     "studentOne":student["name"],
@@ -852,7 +854,7 @@ def getStudentsdata(mailid):
             else:
                  allStudentsData.append({
                     "team":student["team"],
-                    "projectId":"CSE-25-1354",
+                    "teamId":student["teamId"],
                     "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
                     "registerNoOne":student["regNo"],
                     "studentOne":student["name"],
