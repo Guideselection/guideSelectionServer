@@ -619,7 +619,7 @@ def add_registered_data():
     email = data.get('email')
     users_collection = db.registeredUsers
     guideMailId = data.get("guideMailId")
-
+    print("Registration - ", email, registration_locks)
 
     collection = db.facultylist
     filter = {'University EMAIL ID':guideMailId}
