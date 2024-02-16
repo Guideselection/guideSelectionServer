@@ -7,6 +7,7 @@ from pymongo.errors import InvalidOperation, DuplicateKeyError
 import random
 import jwt
 from datetime import datetime, timedelta
+import time
 
 app=Flask(__name__)
 CORS(app)
@@ -609,7 +610,7 @@ def updateLoginData():
 
 
 
-
+registration_locks = {}
 
 @app.route('/add_registered_data', methods=['PUT'])
 def add_registered_data():
@@ -625,6 +626,13 @@ def add_registered_data():
     result = collection.find_one(filter)
     # print(result)
     if result['TOTAL BATCHES']>0:
+        # Check if registration lock is set for the guide
+        while registration_locks.get(guideMailId):
+            time.sleep(1)  # Wait for a short period
+            # Check again after waiting
+
+        # Set registration lock for the guide
+        registration_locks[guideMailId] = True
         try:
             # Start a client session
             with client.start_session() as session:
