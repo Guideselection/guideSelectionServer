@@ -625,39 +625,43 @@ def add_registered_data():
     filter = {'University EMAIL ID':guideMailId}
     result = collection.find_one(filter)
     # print(result)
-    if result['TOTAL BATCHES']>0:
+    if result:
         # Check if registration lock is set for the guide
         while registration_locks.get(guideMailId):
             time.sleep(1)  # Wait for a short period
             # Check again after waiting
 
-        # Set registration lock for the guide
-        registration_locks[guideMailId] = True
-        try:
-            # Start a client session
-            with client.start_session() as session:
-                # Start a transaction
-                
-                with session.start_transaction():
 
-                # Perform the critical operation
-                    new_user = data
-                    users_collection.insert_one(new_user, session=session)
+        result = collection.find_one(filter)
+        if result['TOTAL BATCHES']>0:
+            # Set registration lock for the guide
+            registration_locks[guideMailId] = True
+            try:
+                # Start a client session
+                with client.start_session() as session:
+                    # Start a transaction
+                    
+                    with session.start_transaction():
 
-                # Commit the transaction
-                # session.commit_transaction()
+                    # Perform the critical operation
+                        new_user = data
+                        users_collection.insert_one(new_user, session=session)
 
+                    # Commit the transaction
+                    # session.commit_transaction()
+                # Clear registration lock after registration is complete
+                del registration_locks[guideMailId]
 
-            return jsonify({'message': 'User registered successfully'}), 201
-        except DuplicateKeyError as e:
-            # session.abort_transaction()
-            return jsonify({"error": "Email already registered"})
-        except InvalidOperation as e:
-            return jsonify({"error": str(e)}), 400
-        except Exception as e:
-            return jsonify({"error": "An error occurred during registration","exception":e})
-    else:
-        return jsonify({'message': 'No Vacancies'})
+                return jsonify({'message': 'User registered successfully'}), 201
+            except DuplicateKeyError as e:
+                # session.abort_transaction()
+                return jsonify({"error": "Email already registered"})
+            except InvalidOperation as e:
+                return jsonify({"error": str(e)}), 400
+            except Exception as e:
+                return jsonify({"error": "An error occurred during registration","exception":e})
+        else:
+            return jsonify({'message': 'No Vacancies'})
 
 
 @app.route("/rollback_registered_data", methods=["POST"])
