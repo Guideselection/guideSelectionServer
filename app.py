@@ -653,7 +653,7 @@ def acquire_lock(guide_mail_id):
 def release_lock(guide_mail_id):
     lock_collection = db["lock_collection"]
     lock_collection.delete_one({"mailId": guide_mail_id})
-
+# print(acquire_lock("dean.computing@sathyabama.ac.in"))
 
 @app.route('/add_registered_data', methods=['PUT'])
 def add_registered_data():
@@ -673,7 +673,7 @@ def add_registered_data():
         while not acquire_lock(guideMailId):
             time.sleep(1)  # Wait for a short period
             # Check again after waiting
-
+        print(email, "--Acquired Lock")
 
         result = collection.find_one(filter)
         if result['TOTAL BATCHES']>0:
@@ -692,6 +692,7 @@ def add_registered_data():
                     # session.commit_transaction()
                         # Release the lock when done
                         release_lock(guideMailId)
+                        print(email, "--Realesed Lock")
                 
                 return jsonify({'message': 'User registered successfully'}), 201
             except DuplicateKeyError as e:
@@ -704,6 +705,7 @@ def add_registered_data():
             finally:
                 # Release the lock when done
                 release_lock(guideMailId)
+                print(email, "--Realesed Lock")
         else:
             return jsonify({'message': 'No Vacancies'})
 
