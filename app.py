@@ -421,6 +421,8 @@ def create_collection_single(mailId):
     collection_data["documentation"] = documents
     collection_data["comments"] = comments
     collection_data["editProjectDetails"] = False
+    collection_data["marks"] = 0
+
 
     teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
     collection_data["teamId"] = teamiId
@@ -440,21 +442,30 @@ def create_collection_single(mailId):
 
 
     collection = db["facultylist"]
-    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuide"] })
-    updated_data = {}
+    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] })
+    updated_data = {"allStudents":[], "allTeams":[]}
+
+
     if document:
         if "allStudents" in document:
             document["allStudents"].append(mailId)
         else:
             document["allStudents"] = [mailId]
+
+        if "allTeams" in document:
+            document["allTeams"].append(teamiId)
+        else:
+            document["allTeams"] = [teamiId]
+
     updated_data["allStudents"] = document["allStudents"]
+    updated_data["allTeams"] = document["allTeams"]
 
 
     # print(filter_data, updated_data)
 
     # Update the data in the collection
     
-    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuide"] }, {'$set': updated_data})
+    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
 
 
                     
@@ -535,6 +546,11 @@ def create_collection_duo(mailId1, mailId2):
     collection_data["documentation"] = documents
     collection_data["comments"] = comments
     collection_data["editProjectDetails"] = False
+    collection_data["marks"] = 0
+    collection_data["p2marks"] = 0
+
+
+
 
     # Create the collection
     collection = db["registeredStudentsData"]
@@ -558,21 +574,29 @@ def create_collection_duo(mailId1, mailId2):
 
 
     collection = db["facultylist"]
-    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuide"] })
-    updated_data = {}
+    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] })
+    updated_data = {"allStudents":[]}
     if document:
         if "allStudents" in document:
             document["allStudents"].append(mailId1)
+            document["allStudents"].append(mailId2)
         else:
-            document["allStudents"] = [mailId1]
+            document["allStudents"] = [mailId1, mailId2]
+
+        if "allTeams" in document:
+            document["allTeams"].append(teamiId)
+        else:
+            document["allTeams"] = [teamiId]
+
     updated_data["allStudents"] = document["allStudents"]
+    updated_data["allTeams"] = document["allTeams"]
 
 
     # print(filter_data, updated_data)
 
     # Update the data in the collection
     
-    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuide"] }, {'$set': updated_data})
+    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
 
 
                     
