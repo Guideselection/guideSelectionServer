@@ -181,6 +181,30 @@ def check_account_avalable(mail):
 @app.route('/api/check/<string:mailid>/<string:password>', methods=['GET'])
 def check_data(mailid,password):
     # Get the update data from the request
+
+
+    if str(mailid)[:6]=="CSE-25":
+        filter = {"teamId":mailid}
+        collection = db.users  # Replace <collection_name> with the name of your collection
+        result = collection.find_one(filter)
+
+
+        if result is None:
+            return jsonify({'is_account_available': "false"})
+        else:
+            if str(password)==str(result['password']):
+                return jsonify({'is_account_available': "true",
+                                "is_password_correct":"true","_id":str(id),
+                                "token":token,
+                                "first_time":"false",
+                                "Is_Email_sent":"false"
+                            })
+            else:
+                return jsonify({'is_account_available': "true", "is_password_correct":"false",password:result["password"], "first_time":"false", "Is_Email_sent":"false"})
+
+
+
+
     filter = {'email': mailid}
 
     # Update the data in the collection
@@ -223,71 +247,6 @@ def check_data(mailid,password):
             return jsonify({'is_account_available': "false" , "Is_Email_sent":"false"})
     
     elif str(password)==result['password']:
-
-        # registeredStudentsData = db['registeredStudentsData']
-        # filter = {"mailId":mailid}
-        # print(filter)
-        # studentCompleteData = registeredStudentsData.find(filter)
-        # print(studentCompleteData[0])
-
-        # # Initialize an empty list to store the results
-        # studentData = []
-        # projectDetails = []
-        # projectStatus = []
-        # documentation = []
-
-        # # Iterate over the cursor to extract data
-        # for student in studentData:
-        #     # Do something with each document in the cursor
-        #     if student["team"]:
-        #         studentData.append({
-        #         # "student_id": str(student["_id"]),
-        #             "name": student["name"],
-        #             "team":student["team"],
-        #             "regNo":student["regNo"],
-        #             "phoneNo":student["phoneNo"],
-        #             "p2name":student["p2name"],
-        #             "p2regNo":student["p2regNo"],
-        #             "p2phoneNo":student["p2phoneNo"],
-        #             "p2mailId":student["p2mailId"],
-        #         })
-        #     else:
-        #         studentData.append({
-        #         # "student_id": str(student["_id"]),
-        #             "name": student["name"],
-        #             "team":student["team"],
-        #             "regNo":student["regNo"],
-        #             "phoneNo":student["phoneNo"]
-        #         })
-
-        #     projectDetails.append({
-        #         "projectTitle": student["projectTitle"],
-        #         "projectDesc": student["projectDesc"],
-        #         "projectDomain": student["projectDomain"]
-        #     })
-
-        #     projectStatus.append({
-        #         "documentation": student["status"]["documentation"],
-        #         "ppt": student["status"]["ppt"],
-        #         "guideApproval": student["status"]["guideApproval"],
-        #         "researchPaper": {
-        #             "approval" : student["status"]["researchPaper"]["approval"],
-        #             "communicated" : student["status"]["researchPaper"]["communicated"],
-        #             "accepted" : student["status"]["researchPaper"]["accepted"],
-        #             "payment" : student["status"]["researchPaper"]["payment"]
-        #         }
-        #     })
-
-        #     documentation.append({
-        #         "researchPaper": student["documentation"]["researchPaper"],
-        #         "documentation": student["documentation"]["documentation"],
-        #         "ppt": student["documentation"]["ppt"]
-        #     })
-             
-        #         # Add more fields as needed
-            
-        
-
 
 
         return jsonify({'is_account_available': "true",
