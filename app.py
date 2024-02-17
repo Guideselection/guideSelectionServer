@@ -611,7 +611,7 @@ def updateLoginData():
 
 
 # @app.route('/update_vacancies_data', methods=['PUT'])
-def update_vacancies_data(collection_name, filter_data, updated_data):
+def update_vacancies_data(collection_name, filter_data, updated_data, studentEmail):
     data = request.json  # Assuming the request data is in JSON format
     # Extract data from the request JSON
     # collection_name = data.get('collection_name')
@@ -622,9 +622,9 @@ def update_vacancies_data(collection_name, filter_data, updated_data):
     document = collection.find_one(filter_data)
     if document:
         if "allStudents" in document:
-            document["allStudents"].append(data.get("student_mailId"))
+            document["allStudents"].append(studentEmail)
         else:
-            document["allStudents"] = [data.get("student_mailId")]
+            document["allStudents"] = [studentEmail]
     updated_data["allStudents"] = document["allStudents"]
 
 
@@ -653,6 +653,7 @@ def acquire_lock(guide_mail_id):
 def release_lock(guide_mail_id):
     lock_collection = db["lock_collection"]
     lock_collection.delete_one({"mailId": guide_mail_id})
+
 
 @app.route('/add_registered_data', methods=['PUT'])
 def add_registered_data():
@@ -686,9 +687,11 @@ def add_registered_data():
                     # Perform the critical operation
                         new_user = data
                         users_collection.insert_one(new_user, session=session)
-                        update_vacancies_data("facultylist", { "University EMAIL ID": guideMailId }, {"TOTAL BATCHES": result['TOTAL BATCHES']-1 } )
+                        update_vacancies_data("facultylist", { "University EMAIL ID": guideMailId }, {"TOTAL BATCHES": result['TOTAL BATCHES']-1 }, email )
                     # Commit the transaction
                     # session.commit_transaction()
+                        # Release the lock when done
+                        release_lock(guideMailId)
                 
                 return jsonify({'message': 'User registered successfully'}), 201
             except DuplicateKeyError as e:
