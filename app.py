@@ -610,6 +610,37 @@ def updateLoginData():
 
 
 
+# @app.route('/update_vacancies_data', methods=['PUT'])
+def update_vacancies_data(collection_name, filter_data, updated_data):
+    data = request.json  # Assuming the request data is in JSON format
+    # Extract data from the request JSON
+    # collection_name = data.get('collection_name')
+    # filter_data = data.get('filter_data')
+    # updated_data = data.get('updated_data')
+
+    collection = db[collection_name]
+    document = collection.find_one(filter_data)
+    if document:
+        if "allStudents" in document:
+            document["allStudents"].append(data.get("student_mailId"))
+        else:
+            document["allStudents"] = [data.get("student_mailId")]
+    updated_data["allStudents"] = document["allStudents"]
+
+
+    # print(filter_data, updated_data)
+
+    # Update the data in the collection
+    
+    result = collection.update_one(filter_data, {'$set': updated_data})
+
+    if result.modified_count > 0:
+        return jsonify({"message": "Data updated successfully!"})
+    else:
+        return jsonify({"message": "No matching data found for update."}), 404
+
+
+
 # Function to acquire a lock
 def acquire_lock(guide_mail_id):
     lock_collection = db["lock_collection"]
@@ -655,7 +686,7 @@ def add_registered_data():
                     # Perform the critical operation
                         new_user = data
                         users_collection.insert_one(new_user, session=session)
-
+                        update_vacancies_data("facultylist", { "University EMAIL ID": guideMailId }, {"TOTAL BATCHES": result['TOTAL BATCHES']-1 } )
                     # Commit the transaction
                     # session.commit_transaction()
                 
@@ -694,34 +725,6 @@ def check_vacancies(mail):
 
 
 
-@app.route('/update_vacancies_data', methods=['PUT'])
-def update_vacancies_data():
-    data = request.json  # Assuming the request data is in JSON format
-    # Extract data from the request JSON
-    collection_name = data.get('collection_name')
-    filter_data = data.get('filter_data')
-    updated_data = data.get('updated_data')
-
-    collection = db[collection_name]
-    document = collection.find_one(filter_data)
-    if document:
-        if "allStudents" in document:
-            document["allStudents"].append(data.get("student_mailId"))
-        else:
-            document["allStudents"] = [data.get("student_mailId")]
-    updated_data["allStudents"] = document["allStudents"]
-
-
-    # print(filter_data, updated_data)
-
-    # Update the data in the collection
-    
-    result = collection.update_one(filter_data, {'$set': updated_data})
-
-    if result.modified_count > 0:
-        return jsonify({"message": "Data updated successfully!"})
-    else:
-        return jsonify({"message": "No matching data found for update."}), 404
 
 
 
