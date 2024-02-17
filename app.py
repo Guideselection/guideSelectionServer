@@ -188,16 +188,19 @@ def check_data(mailid,password):
         collection = db.users  # Replace <collection_name> with the name of your collection
         result = collection.find_one(filter)
 
+        token = generate_token(result["email"])
 
         if result is None:
             return jsonify({'is_account_available': "false"})
         else:
             if str(password)==str(result['password']):
                 return jsonify({'is_account_available': "true",
-                                "is_password_correct":"true","_id":str(id),
+                                "is_password_correct":"true",
                                 "token":token,
                                 "first_time":"false",
-                                "Is_Email_sent":"false"
+                                "Is_Email_sent":"false",
+                                "userEmail":result["email"],
+                                "teamId":mailid
                             })
             else:
                 return jsonify({'is_account_available': "true", "is_password_correct":"false",password:result["password"], "first_time":"false", "Is_Email_sent":"false"})
@@ -253,7 +256,9 @@ def check_data(mailid,password):
                             "is_password_correct":"true","_id":str(id),
                             "token":token,
                             "first_time":"false",
-                            "Is_Email_sent":"false"
+                            "Is_Email_sent":"false",
+                            "teamId":result["teamId"],
+                            "userEmail":mailid
                         })
 
     else:
@@ -845,6 +850,7 @@ def getStudentdata(mailid):
                 "teamId":student["teamId"],
                 "editProjectDetails":student["editProjectDetails"],
                 "section":student["section"],
+                "p2section":student["p2section"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
 
@@ -967,6 +973,7 @@ def getStudentsdata(mailid):
                     "registerNoTwo":student["p2regNo"],
                     "studentTwo":student["p2name"],
                     "section":student["section"],
+                    "p2section":student["p2section"],
                     "projectTitle":student["projectTitle"]})
             else:
                  allStudentsData.append({
