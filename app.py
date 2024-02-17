@@ -673,7 +673,7 @@ def add_registered_data():
         while not acquire_lock(guideMailId):
             time.sleep(1)  # Wait for a short period
             # Check again after waiting
-        print(email, "--Acquired Lock")
+        # print(email, "--Acquired Lock")
 
         result = collection.find_one(filter)
         if result['TOTAL BATCHES']>0:
@@ -691,8 +691,8 @@ def add_registered_data():
                     # Commit the transaction
                     # session.commit_transaction()
                         # Release the lock when done
-                        release_lock(guideMailId)
-                        print(email, "--Realesed Lock")
+                        
+                        # print(email, "--Realesed Lock")
                 
                 return jsonify({'message': 'User registered successfully'}), 201
             except DuplicateKeyError as e:
@@ -705,8 +705,9 @@ def add_registered_data():
             finally:
                 # Release the lock when done
                 release_lock(guideMailId)
-                print(email, "--Realesed Lock")
+                # print(email, "--Realesed Lock")
         else:
+            release_lock(guideMailId)
             return jsonify({'message': 'No Vacancies'})
 
 
