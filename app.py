@@ -610,7 +610,18 @@ def updateLoginData():
 
 
 
-registration_locks = {}
+# Function to acquire a lock
+def acquire_lock(guide_mail_id):
+    lock_collection = db["lock_collection"]
+    try:
+        lock_collection.insert_one({"mailId": guide_mail_id})
+        return True
+    except DuplicateKeyError:
+        return False
+# Function to release a lock
+def release_lock(guide_mail_id):
+    lock_collection = db["lock_collection"]
+    lock_collection.delete_one({"mailId": guide_mail_id})
 
 @app.route('/add_registered_data', methods=['PUT'])
 def add_registered_data():
@@ -619,7 +630,7 @@ def add_registered_data():
     email = data.get('email')
     users_collection = db.registeredUsers
     guideMailId = data.get("guideMailId")
-    print("Registration - ", email, registration_locks)
+    
 
     collection = db.facultylist
     filter = {'University EMAIL ID':guideMailId}
@@ -627,15 +638,13 @@ def add_registered_data():
     # print(result)
     if result:
         # Check if registration lock is set for the guide
-        while registration_locks.get(guideMailId):
+        while not acquire_lock(guideMailId):
             time.sleep(1)  # Wait for a short period
             # Check again after waiting
 
 
         result = collection.find_one(filter)
         if result['TOTAL BATCHES']>0:
-            # Set registration lock for the guide
-            registration_locks[guideMailId] = True
             try:
                 # Start a client session
                 with client.start_session() as session:
@@ -649,9 +658,7 @@ def add_registered_data():
 
                     # Commit the transaction
                     # session.commit_transaction()
-                # Clear registration lock after registration is complete
-                del registration_locks[guideMailId]
-
+                
                 return jsonify({'message': 'User registered successfully'}), 201
             except DuplicateKeyError as e:
                 # session.abort_transaction()
@@ -660,6 +667,9 @@ def add_registered_data():
                 return jsonify({"error": str(e)}), 400
             except Exception as e:
                 return jsonify({"error": "An error occurred during registration","exception":e})
+            finally:
+                # Release the lock when done
+                release_lock(guideMailId)
         else:
             return jsonify({'message': 'No Vacancies'})
 
