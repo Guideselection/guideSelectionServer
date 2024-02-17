@@ -438,6 +438,25 @@ def create_collection_single(mailId):
     inserted_data = collection.insert_one(collection_data)
 
 
+
+    collection = db["facultylist"]
+    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuide"] })
+    updated_data = {}
+    if document:
+        if "allStudents" in document:
+            document["allStudents"].append(mailId)
+        else:
+            document["allStudents"] = [mailId]
+    updated_data["allStudents"] = document["allStudents"]
+
+
+    # print(filter_data, updated_data)
+
+    # Update the data in the collection
+    
+    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuide"] }, {'$set': updated_data})
+
+
                     
     #Send Mail To Student
     password = collection_data['password']
@@ -538,6 +557,24 @@ def create_collection_duo(mailId1, mailId2):
     inserted_data = collection.insert_one(collection_data)
 
 
+    collection = db["facultylist"]
+    document = collection.find_one({ "University EMAIL ID": collection_data["selectedGuide"] })
+    updated_data = {}
+    if document:
+        if "allStudents" in document:
+            document["allStudents"].append(mailId1)
+        else:
+            document["allStudents"] = [mailId1]
+    updated_data["allStudents"] = document["allStudents"]
+
+
+    # print(filter_data, updated_data)
+
+    # Update the data in the collection
+    
+    result = collection.update_one({ "University EMAIL ID": collection_data["selectedGuide"] }, {'$set': updated_data})
+
+
                     
     #Send Mail To Student
     password = collection_data['password']
@@ -611,7 +648,7 @@ def updateLoginData():
 
 
 # @app.route('/update_vacancies_data', methods=['PUT'])
-def update_vacancies_data(collection_name, filter_data, updated_data, studentEmail):
+def update_vacancies_data(collection_name, filter_data, updated_data):
     data = request.json  # Assuming the request data is in JSON format
     # Extract data from the request JSON
     # collection_name = data.get('collection_name')
@@ -619,13 +656,13 @@ def update_vacancies_data(collection_name, filter_data, updated_data, studentEma
     # updated_data = data.get('updated_data')
 
     collection = db[collection_name]
-    document = collection.find_one(filter_data)
-    if document:
-        if "allStudents" in document:
-            document["allStudents"].append(studentEmail)
-        else:
-            document["allStudents"] = [studentEmail]
-    updated_data["allStudents"] = document["allStudents"]
+    # document = collection.find_one(filter_data)
+    # if document:
+    #     if "allStudents" in document:
+    #         document["allStudents"].append(studentEmail)
+    #     else:
+    #         document["allStudents"] = [studentEmail]
+    # updated_data["allStudents"] = document["allStudents"]
 
 
     # print(filter_data, updated_data)
@@ -687,7 +724,8 @@ def add_registered_data():
                     # Perform the critical operation
                         new_user = data
                         users_collection.insert_one(new_user, session=session)
-                        update_vacancies_data("facultylist", { "University EMAIL ID": guideMailId }, {"TOTAL BATCHES": result['TOTAL BATCHES']-1 }, email )
+                        if data.get("update_vacancies_data"):
+                            update_vacancies_data("facultylist", { "University EMAIL ID": guideMailId }, {"TOTAL BATCHES": result['TOTAL BATCHES']-1 } )
                     # Commit the transaction
                     # session.commit_transaction()
                         # Release the lock when done
@@ -715,7 +753,12 @@ def add_registered_data():
 def rollback_registered_data():
     data = request.json
     collection = db.registeredUsers
-    result = collection.delete_many(data)
+    delete_result = collection.delete_many({"email":data.get("email")})
+
+    # collection = db.facultylist
+    # filter = {'University EMAIL ID':data.get("guideMailId")}
+    # result = collection.find_one(filter)
+    # update_vacancies_data("facultylist", { "University EMAIL ID": data.get("guideMailId") }, {"TOTAL BATCHES": result['TOTAL BATCHES']+1 })
 
     return jsonify({"deleted":"true"})
 
