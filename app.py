@@ -966,24 +966,27 @@ def getStudentsdata(mailid):
             if student["team"]:
                 allStudentsData.append({
                     "team":student["team"],
-                    "teamId":student["teamId"],
-                    "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
-                    "registerNoOne":student["regNo"],
+                    "projectId":student["teamId"],
+                    "studentOneImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "studentTwoImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "regNoOne":student["regNo"],
                     "studentOne":student["name"],
-                    "registerNoTwo":student["p2regNo"],
+                    "regNoTwo":student["p2regNo"],
                     "studentTwo":student["p2name"],
                     "section":student["section"],
                     "p2section":student["p2section"],
-                    "projectTitle":student["projectTitle"]})
+                    "projectTitle":student["projectTitle"],
+                    "projectDomain":student["projectDomain"]})
             else:
                  allStudentsData.append({
                     "team":student["team"],
-                    "teamId":student["teamId"],
-                    "teamLeadImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
-                    "registerNoOne":student["regNo"],
+                    "projectId":student["teamId"],
+                    "studentOneImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "regNoOne":student["regNo"],
                     "studentOne":student["name"],
                     "section":student["section"],
-                    "projectTitle":student["projectTitle"]})
+                    "projectTitle":student["projectTitle"],
+                    "projectDomain":student["projectDomain"]})
     
 
     
