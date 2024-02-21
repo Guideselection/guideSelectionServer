@@ -994,6 +994,101 @@ def getStudentsdata(mailid):
     return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData })
 
 
+
+@app.route("/staffLogin/getProfileData/profile_details/<string:teamid>", methods=["POST"])
+def getTeamdetails(teamid):
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
+    team_data = registeredStudentsData.find_one(filter)
+    if not team_data:
+        return jsonify({"error": "Team not found"}), 404
+
+    studentdetailsone = []
+    studentdetailstwo = []
+
+    projectdetails = []
+    guidedetails = []
+
+
+    projectdetails.append({
+        "title": team_data["projectTitle"],
+        "desc": team_data["projectDesc"],
+        "domain": team_data["projectDomain"],
+        "projectApproval":team_data["editProjectDetails"]
+    })
+
+    guidedetails.append({
+        "projectId": team_data["teamId"],
+        "guideName": team_data["selectedGuide"],
+        "guideMaidId": team_data["selectedGuideMailId"]
+    })
+
+
+    if team_data["team"]:
+        studentdetailsone.append({
+            "imgOne":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "secOne": team_data["section"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+        })
+        studentdetailstwo.append({
+            "team": team_data["team"],            
+            "fullNameTwo": team_data["p2name"],
+            "regNoTwo": team_data["p2regNo"],
+            "mobileNoTwo": team_data["p2phoneNo"],
+            "emailTwo": team_data["p2mailId"],
+            "secTwo": team_data["p2section"],
+            "imgTwo":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg"
+        })
+        return jsonify({
+        "studentDetailsOne": studentdetailsone[0],
+        "studentDetailsTwo" : studentdetailstwo[0],
+        "projectdetails": projectdetails[0],
+        "guidedetails": guidedetails[0],
+    })
+
+    else:
+        studentdetailsone.append({
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+            "secOne": team_data["section"],
+            "imgOne":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg"
+        })
+
+        return jsonify({
+            "studentDetailsOne": studentdetailsone[0],
+            "projectDetails": projectdetails[0],
+            "guideDetails": guidedetails[0],
+        })
+    
+
+@app.route("/staffLogin/updateProjectDetails/<string:teamid>", methods=["POST"])
+def updateProjectDetailsStatus(teamid):
+    updatedData = request.json
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
+
+    approval_status = updatedData.get("approvalStatus", "")
+
+    updatedResult = registeredStudentsData.update_one(filter, {"$set": updatedData})
+
+    if approval_status == "approved":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"editProjectDetails": False}})
+    elif approval_status == "declined":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"editProjectDetails": True}})
+    else:
+        pass
+
+    # if updatedResult.modified_count == 1:
+    return jsonify({"message": "success"})
+    
+
     # registeredStudentsData = db['registeredStudentsData']
     # filter = {"mailId":mailid}
     # print(filter)
