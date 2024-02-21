@@ -1068,6 +1068,124 @@ def getTeamdetails(teamid):
         })
     
 
+@app.route("/staffLogin/getProfileData/<string:teamid>", methods=["POST"])
+def get_profile_data(teamid):
+    print(request.json)
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId":teamid}
+    profileCompleteData = registeredStudentsData.find(filter)
+
+
+    # Initialize an empty list to store the results
+    projectDetails = []
+    projectMarks = []
+    links=[]
+    documentation=[]
+    ppt=[]
+    researchPaper=[]
+    guideApproval=[]
+    isChecked = []
+    comments = []
+
+
+   
+    for team in profileCompleteData:
+        
+        if team["team"]:
+            projectDetails.append({
+                  "studentOneImg":
+      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                "studentOneName": team["name"],
+                "team":team["team"],
+                "studentOneRegNo":team["regNo"],
+                "studentOneSection":team["section"],
+               
+                "studentTwoImg":
+      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                "studentTwoName":team["p2name"],
+                "studentTwoRegNo":team["p2regNo"],
+                "studentTwoSection":team["p2section"],
+                 "projectId":team["teamId"],
+                "projectTitle":team["projectTitle"],
+                "projectDomain":team["projectDomain"],
+                
+            })
+        else:
+            projectDetails.append({
+                "studentOneImg":
+      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                "studentOneName": team["name"],
+                "team":team["team"],
+                "studentOneRegNo":team["regNo"],
+                "studentOneSection":team["section"],
+                "projectId":team["teamId"],
+                "projectTitle":team["projectTitle"],
+                "projectDomain":team["projectDomain"]
+            })
+        if team["team"]:
+            projectMarks.append({
+                 "studentOneMarks":team["marks"],
+                 "studentTwoMarks":team["p2marks"]
+                 })
+        else:
+             projectMarks.append({
+                 "studentOneMarks":team["marks"]
+                 })
+        
+
+
+        isChecked.append({
+            "researchPaper": {
+                "communicated" : team["status"]["researchPaper"]["communicated"],
+                "accepted" : team["status"]["researchPaper"]["accepted"],
+                "paymentDone" : team["status"]["researchPaper"]["payment"]
+            }
+        })
+
+
+        documentation.append({
+            "documentation": team["status"]["documentation"]
+            })
+        ppt.append({
+             "ppt": team["status"]["ppt"]
+            })
+        researchPaper.append({ 
+            "researchPaper": {
+                 "approval" : team["status"]["researchPaper"]["approval"]
+            }
+        })
+        guideApproval.append({
+            "guideApproval": team["editProjectDetails"]
+            })
+        
+
+        links.append({
+            "researchPaper": team["documentation"]["researchPaper"],
+            "documentation": team["documentation"]["documentation"],
+            "ppt": team["documentation"]["ppt"]
+        })
+
+
+        comments.append(team["comments"])
+
+ 
+
+
+
+    return jsonify({    
+                        "projectDetails":projectDetails[0],
+                        "projectMarks":projectMarks[0],
+                        "links":links[0],
+                        "isChecked":isChecked[0],
+                        "documentation":documentation[0],
+                        "researchPaper":researchPaper[0],
+                        "ppt":ppt[0],
+                        "guideApproval":guideApproval[0],
+                        "comments":comments[0]
+                    })
+
+
+
 @app.route("/staffLogin/updateProjectDetails/<string:teamid>", methods=["POST"])
 def updateProjectDetailsStatus(teamid):
     updatedData = request.json
@@ -1076,7 +1194,7 @@ def updateProjectDetailsStatus(teamid):
 
     approval_status = updatedData.get("approvalStatus", "")
 
-    updatedResult = registeredStudentsData.update_one(filter, {"$set": updatedData})
+    # updatedResult = registeredStudentsData.update_one(filter, {"$set": updatedData})
 
     if approval_status == "approved":
         updatedResult = registeredStudentsData.update_one(filter, {"$set": {"editProjectDetails": False}})
