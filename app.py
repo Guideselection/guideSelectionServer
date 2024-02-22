@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask_cors import CORS
@@ -8,6 +8,13 @@ import random
 import jwt
 from datetime import datetime, timedelta
 import time
+import driveAPI
+import os
+import io
+import tempfile
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from werkzeug.utils import secure_filename
 
 app=Flask(__name__)
 CORS(app)
@@ -398,7 +405,9 @@ def create_collection_single(mailId):
     users_collection.update_one(filter, update)
     registered_users.update_one(filter, update)
 
+    usersCollection = db["users"]
 
+    collection_data["image"] = usersCollection.find_one(filter)["image"]
 
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
@@ -514,6 +523,8 @@ def create_collection_duo(mailId1, mailId2):
     collection_data["p2marks"] = 0
 
 
+    
+
 
 
     # Create the collection
@@ -532,6 +543,11 @@ def create_collection_duo(mailId1, mailId2):
     registered_users.update_one(filter1, update)
     users_collection.update_one(filter2, update)
     registered_users.update_one(filter2, update)
+
+    usersCollection = db["users"]
+    collection_data["image"] = usersCollection.find_one(filter1)["image"]
+    collection_data["p2image"] = usersCollection.find_one(filter2)["image"]
+
 
     # Insert data into the collection
     inserted_data = collection.insert_one(collection_data)
@@ -823,7 +839,7 @@ def getStudentdata(mailid):
     filter = {"mailId":mailid}
     print(filter)
     studentCompleteData = registeredStudentsData.find(filter)
-    print(studentCompleteData[0])
+    # print(studentCompleteData[0])
 
     # Initialize an empty list to store the results
     studentData = []
@@ -927,7 +943,9 @@ def updateProjectDetails(mailid):
     updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
 
     if updatedResult.modified_count==1:
-        return jsonify({"message":"success"})
+        return jsonify({"message":"Success"})
+    else:
+        return jsonify({'message': 'Fail'})
 
 @app.route("/staffLogin/check/<string:mailId>/<string:password>", methods=["GET"])
 def checkStaffLogin(mailId, password):
@@ -952,9 +970,11 @@ def getStudentsdata(mailid):
     filter = {"University EMAIL ID": mailid}
     allStudentMailIds = []
     guide = facultylist.find(filter)
+    guideImg=""
     for g in guide:
         print(g["allStudents"])
         allStudentMailIds = g["allStudents"]
+        guideImg=g["IMAGE"]
 
     allStudentsData = []
     registeredStudentsData = db['registeredStudentsData']
@@ -991,7 +1011,7 @@ def getStudentsdata(mailid):
 
     
 
-    return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData })
+    return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData, "guideImg":guideImg })
 
 
 
@@ -1063,8 +1083,8 @@ def getTeamdetails(teamid):
 
         return jsonify({
             "studentDetailsOne": studentdetailsone[0],
-            "projectDetails": projectdetails[0],
-            "guideDetails": guidedetails[0],
+            "projectdetails": projectdetails[0],
+            "guidedetails": guidedetails[0],
         })
     
 
@@ -1203,95 +1223,232 @@ def updateProjectDetailsStatus(teamid):
     else:
         pass
 
-    # if updatedResult.modified_count == 1:
-    return jsonify({"message": "success"})
+    if updatedResult.modified_count == 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
+
     
 
-    # registeredStudentsData = db['registeredStudentsData']
-    # filter = {"mailId":mailid}
-    # print(filter)
-    # studentCompleteData = registeredStudentsData.find(filter)
-    # print(studentCompleteData[0])
-
-    # # Initialize an empty list to store the results
-    # studentData = []
-    # projectDetails = []
-    # projectStatus = []
-    # documentation = []
-
-
-    # # Iterate over the cursor to extract data
-    # for student in studentCompleteData:
-    #     # Do something with each document in the cursor
-    #     if student["team"]:
-    #         studentData.append({
-    #         # "student_id": str(student["_id"]),
-    #             "name": student["name"],
-    #             "team":student["team"],
-    #             "regNo":student["regNo"],
-    #             "phoneNo":student["phoneNo"],
-    #             "p2name":student["p2name"],
-    #             "p2regNo":student["p2regNo"],
-    #             "p2phoneNo":student["p2phoneNo"],
-    #             "p2mailId":student["p2mailId"],
-    #             "selectedGuide":student["selectedGuide"],
-    #             "selectedGuideMailId":student["selectedGuideMailId"]
-
-
-    #         })
-    #     else:
-    #         studentData.append({
-    #         # "student_id": str(student["_id"]),
-    #             "name": student["name"],
-    #             "team":student["team"],
-    #             "regNo":student["regNo"],
-    #             "phoneNo":student["phoneNo"],
-    #             "selectedGuide":student["selectedGuide"],
-    #             "selectedGuideMailId":student["selectedGuideMailId"]
-    #         })
-
-    #     projectDetails.append({
-    #         "projectTitle": student["projectTitle"],
-    #         "projectDesc": student["projectDesc"],
-    #         "projectDomain": student["projectDomain"]
-    #     })
-
-    #     projectStatus.append({
-    #         "documentation": student["status"]["documentation"],
-    #         "ppt": student["status"]["ppt"],
-    #         "guideApproval": student["status"]["guideApproval"],
-    #         "researchPaper": {
-    #             "approval" : student["status"]["researchPaper"]["approval"],
-    #             "communicated" : student["status"]["researchPaper"]["communicated"],
-    #             "accepted" : student["status"]["researchPaper"]["accepted"],
-    #             "payment" : student["status"]["researchPaper"]["payment"]
-    #         }
-    #     })
-
-    #     documentation.append({
-    #         "researchPaper": student["documentation"]["researchPaper"],
-    #         "documentation": student["documentation"]["documentation"],
-    #         "ppt": student["documentation"]["ppt"]
-    #     })
-
-    # guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
-    # result = db['facultylist'].find(guideFilter)
-    # guideImage=""
-    # for r in result:
-    #     guideImage=r["IMAGE"]
 
 
 
 
-    # return jsonify({    
-    #                     "studentData":studentData,
-    #                     "projectDetails":projectDetails,
-    #                     "projectStatus":projectStatus,
-    #                     "documentation":documentation,
-    #                     "guideImage":guideImage
-    #                 })
+
+@app.route("/staffLogin/profiledetails/updatestatusDetails/<string:teamid>", methods=["POST"])
+def updatestatusDetails(teamid):
+    today_date = datetime.now().strftime('%d-%m-%Y')
+    data = request.json
+    print(data) 
+    status = {
+        "documentation": data["editedDocumentationApproval"],
+        "ppt": data["editedPptApproval"],
+        "guideApproval": data["editedGuideApproval"],
+        "researchPaper": {
+            "approval": data["editedResearchApproval"],
+            "communicated": data["editedCommunicationApproval"],
+            "accepted": data["editedAcceptedApproval"],
+            "payment": data["editedPaymentApproval"]
+        }
+    }
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
+    comment = {
+        today_date: data.get("editedComments", ""),
+    }
+
+    try:
+        if comment[today_date]=="":
+            pass
+        else:
+            registeredStudentsData.update_one(
+            filter,
+            {"$push": {"comments": comment}},
+        )
+
+        # Update status and push comment to the 'comments' array
+        registeredStudentsData.update_one(
+            filter,
+            {"$set": {"status": status}}
+        )
+
+        # Update marks based on the condition
+        filter = {"teamId":teamid}
+
+        size = registeredStudentsData.find_one(filter)
+        if size and size.get("team"):
+            marks = {"marks": data.get("editedStudentOneMarks"), "p2marks": data.get("editedStudentTwoMarks")}
+        else:
+            marks = {"marks": data.get("editedStudentOneMarks")}
+
+        # Update the document with the new marks
+        registeredStudentsData.update_one(filter, {"$set": marks})
 
 
+        return jsonify({"message": "Success"})
+    except:
+        return jsonify({"message": "Fail"})
+
+
+
+
+# Google Drive API credentials
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SERVICE_ACCOUNT_FILE = 'Credentials.json'
+
+# Specify the folder ID where you want to upload the file
+FOLDER_ID = '1u0t5YKNrHOIDFISlShezgIINcSJDkF9S'
+
+
+# @app.route("/upload", methods=["POST"])
+# def upload():
+#     data = request.files.get("ppt")
+
+@app.route('/studentLogin/uploadppt/<string:teamid>', methods=['PUT'])
+def upload_ppt_file(teamid):
+    data = request.form
+    teamId = data.get("teamId")
+    file = request.files.get("ppt")
+    
+        # Define the directory to save the file
+    upload_dir = f'/path/to/save/'
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(upload_dir, exist_ok=True)
+
+    try:
+        
+        # Save the file to the directory
+        file_path_to_upload = os.path.join(upload_dir, f'{teamId}_ppt_{secure_filename(file.filename)}')
+        file.save(file_path_to_upload)
+
+        # Upload file to Google Drive
+        file_name = os.path.basename(file_path_to_upload)
+        file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
+
+        # Get the file link
+        ppt_file_link = f'https://drive.google.com/file/d/{file_id}'
+
+        print(teamid)
+        filter = {"teamId":teamid}
+        collection = db["registeredStudentsData"]
+        doc = collection.find_one(filter)
+        doc["documentation"]["ppt"] = ppt_file_link
+        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
+
+
+        # Cleanup: Delete the temporary file (if needed)
+        os.remove(file_path_to_upload)
+
+        if result:
+            return jsonify({'message': 'Success'})
+        else:
+            return jsonify({'message': 'Fail'})
+    except:
+        return jsonify({'message': 'Fail'})
+
+
+
+@app.route('/studentLogin/uploaddoc/<string:teamid>', methods=['PUT'])
+def upload_researchPaper_file(teamid):
+    data = request.form
+    teamId = data.get("teamId")
+    file = request.files.get("documentation")
+    
+        # Define the directory to save the file
+    upload_dir = f'/path/to/save/'
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(upload_dir, exist_ok=True)
+
+    try:
+    
+        # Save the file to the directory
+        file_path_to_upload = os.path.join(upload_dir, f'{teamId}_documentation_{secure_filename(file.filename)}')
+        file.save(file_path_to_upload)
+
+        # Upload file to Google Drive
+        file_name = os.path.basename(file_path_to_upload)
+        file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
+
+        # Get the file link
+        documentation_file_link = f'https://drive.google.com/file/d/{file_id}'
+
+        print(teamid)
+        filter = {"teamId":teamid}
+        collection = db["registeredStudentsData"]
+        doc = collection.find_one(filter)
+        doc["documentation"]["documentation"] = documentation_file_link
+        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
+
+
+        # Cleanup: Delete the temporary file (if needed)
+        os.remove(file_path_to_upload)
+
+        if result:
+            return jsonify({'message': 'Success'})
+        else:
+            return jsonify({'message': 'Fail'})
+    except:
+        return jsonify({'message': 'Fail'})
+    
+
+
+
+
+
+@app.route('/studentLogin/uploadrspaper/<string:teamid>', methods=['PUT'])
+def upload_doc_file(teamid):
+    data = request.form
+    teamId = data.get("teamId")
+    file = request.files.get("researchPaper")
+    
+        # Define the directory to save the file
+    upload_dir = f'/path/to/save/'
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(upload_dir, exist_ok=True)
+
+    try:
+        
+        # Save the file to the directory
+        file_path_to_upload = os.path.join(upload_dir, f'{teamId}_researchPaper_{secure_filename(file.filename)}')
+        file.save(file_path_to_upload)
+
+        # Upload file to Google Drive
+        file_name = os.path.basename(file_path_to_upload)
+        file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
+
+        # Get the file link
+        researchPaper_file_link = f'https://drive.google.com/file/d/{file_id}'
+
+        print(teamid)
+        filter = {"teamId":teamid}
+        collection = db["registeredStudentsData"]
+        doc = collection.find_one(filter)
+        doc["documentation"]["researchPaper"] = researchPaper_file_link
+        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
+
+
+        # Cleanup: Delete the temporary file (if needed)
+        os.remove(file_path_to_upload)
+        if result:
+            return jsonify({'message': 'Success'})
+        else:
+            return jsonify({'message': 'Fail'})
+    
+    except:
+        return jsonify({'message': 'Fail'})
+
+
+
+# @app.route("/test", methods=["POST"])
+# def test1():
+#     filter1 = {"email" : "geddadavenkatapradeep@gmail.com"}
+#     c = db["users"]
+#     print(c.find_one(filter1)["image"])
+#     return jsonify({'message': 'Fail'})
+    
 
 
 
