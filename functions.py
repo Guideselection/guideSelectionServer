@@ -149,3 +149,21 @@ def insertImagesToStudentDocument(regNo, image):
 
 
 
+# Flask==2.0.1
+# requests==2.26.0
+# gunicorn==20.1.0
+# blinker==1.6.2
+# click==8.1.4
+# colorama==0.4.6
+# dnspython==2.3.0
+# Flask-Cors==4.0.0
+# Flask-Mail==0.9.1
+# itsdangerous==2.1.2
+# Jinja2==3.1.2
+# MarkupSafe==2.1.3
+# PyJWT==2.7.0
+# pymongo==4.4.0
+# Werkzeug==2.0.1
+
+
+
