@@ -877,6 +877,8 @@ def getStudentdata(mailid):
 
 
             })
+            studentImage1 = student["image"]
+            studentImage2 = student["p2image"]
         else:
             studentData.append({
             # "student_id": str(student["_id"]),
@@ -890,6 +892,8 @@ def getStudentdata(mailid):
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
+            studentImage1 = student["image"]
+
 
         projectDetails.append({
             "projectTitle": student["projectTitle"],
@@ -933,7 +937,9 @@ def getStudentdata(mailid):
                         "projectStatus":projectStatus,
                         "documentation":documentation,
                         "guideImage":guideImage,
-                        "comments":comments[0]
+                        "comments":comments[0],
+                        "studentImage1":studentImage1,
+                        "studentImage2":studentImage2,
                     })
 
 
