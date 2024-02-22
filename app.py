@@ -31,8 +31,8 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Replace with your email server
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'pradeepgeddada31@gmail.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'dkjtxrfbelenaebn'  # Replace with your email password
+app.config['MAIL_USERNAME'] = 'guideselection.cse@sathyabama.ac.in'  # Replace with your email address
+app.config['MAIL_PASSWORD'] = 'ucik ubno mwzi onwe'  # Replace with your email password
 
 mail = Mail(app)
 
@@ -248,7 +248,7 @@ def check_data(mailid,password):
         if result:
             try:
                 msg = Message(f'Your OTP is {otp}',  # Email subject
-                            sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                            sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                             recipients=[mailid])  # Replace with the recipient's email address
                 msg.body = 'This is a test email sent from Flask-Mail'  # Email body
 
@@ -301,7 +301,7 @@ def Send_otp(id,mailid):
 
     try:
         msg = Message(f'Your OTP is {otp}',  # Email subject
-                      sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                      sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                       recipients=[mailid])  # Replace with the recipient's email address
         msg.body = 'This is a test email sent from Flask-Mail'  # Email body
 
@@ -453,7 +453,7 @@ def create_collection_single(mailId):
 
     try:
         msg = Message(f'Project Submission Confirmation',  # Email subject
-                      sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                      sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                       recipients=[mailId])  # Replace with the recipient's email address
         msg.html = f"""
         <html>
@@ -593,7 +593,7 @@ def create_collection_duo(mailId1, mailId2):
 
     try:
         msg = Message(f'Project Submission Confirmation',  # Email subject
-                      sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                      sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                       recipients=[mailId1, mailId2])  # Replace with the recipient's email address
         msg.html = f"""
         <html>
@@ -811,7 +811,7 @@ def check_second_Person_mail(mailid):
 
         try:
             msg = Message(f'Your OTP is {otp}',  # Email subject
-                        sender='pradeepgeddada31@gmail.com',  # Replace with your email address
+                        sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                         recipients=[mailid])  # Replace with the recipient's email address
             msg.body = 'This is a test email sent from Flask-Mail'  # Email body
 
