@@ -852,7 +852,8 @@ def getStudentdata(mailid):
     projectStatus = []
     documentation = []
     comments = []
-
+    studentImage2=""
+    studentImage1=""
 
     # Iterate over the cursor to extract data
     for student in studentCompleteData:
@@ -998,8 +999,8 @@ def getStudentsdata(mailid):
                 allStudentsData.append({
                     "team":student["team"],
                     "projectId":student["teamId"],
-                    "studentOneImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
-                    "studentTwoImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "studentOneImg":student["image"],
+                    "studentTwoImg":student["p2image"],
                     "regNoOne":student["regNo"],
                     "studentOne":student["name"],
                     "regNoTwo":student["p2regNo"],
@@ -1012,7 +1013,7 @@ def getStudentsdata(mailid):
                  allStudentsData.append({
                     "team":student["team"],
                     "projectId":student["teamId"],
-                    "studentOneImg":"https://thumbs.dreamstime.com/b/man-profile-cartoo…-vector-illustration-graphic-design-135443492.jpg",
+                    "studentOneImg":student["image"],
                     "regNoOne":student["regNo"],
                     "studentOne":student["name"],
                     "section":student["section"],
@@ -1057,7 +1058,7 @@ def getTeamdetails(teamid):
 
     if team_data["team"]:
         studentdetailsone.append({
-            "imgOne":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+            "imgOne":team_data["image"],
             "fullNameOne": team_data["name"],
             "team": team_data["team"],
             "regNoOne": team_data["regNo"],
@@ -1072,7 +1073,7 @@ def getTeamdetails(teamid):
             "mobileNoTwo": team_data["p2phoneNo"],
             "emailTwo": team_data["p2mailId"],
             "secTwo": team_data["p2section"],
-            "imgTwo":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg"
+            "imgTwo":team_data["p2image"]
         })
         return jsonify({
         "studentDetailsOne": studentdetailsone[0],
@@ -1089,7 +1090,7 @@ def getTeamdetails(teamid):
             "emailOne": team_data["mailId"],
             "mobileNoOne": team_data["phoneNo"],
             "secOne": team_data["section"],
-            "imgOne":"https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg"
+            "imgOne":team_data["image"]
         })
 
         return jsonify({
@@ -1124,15 +1125,13 @@ def get_profile_data(teamid):
         
         if team["team"]:
             projectDetails.append({
-                  "studentOneImg":
-      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                  "studentOneImg":team["image"],
                 "studentOneName": team["name"],
                 "team":team["team"],
                 "studentOneRegNo":team["regNo"],
                 "studentOneSection":team["section"],
                
-                "studentTwoImg":
-      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                "studentTwoImg":team["p2image"],
                 "studentTwoName":team["p2name"],
                 "studentTwoRegNo":team["p2regNo"],
                 "studentTwoSection":team["p2section"],
@@ -1143,8 +1142,7 @@ def get_profile_data(teamid):
             })
         else:
             projectDetails.append({
-                "studentOneImg":
-      "https://thumbs.dreamstime.com/b/man-profile-cartoon-smiling-vector-illustration-graphic-design-135443492.jpg",
+                "studentOneImg":team["image"],
                 "studentOneName": team["name"],
                 "team":team["team"],
                 "studentOneRegNo":team["regNo"],
