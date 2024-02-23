@@ -1324,7 +1324,7 @@ def updatestatusDetails(teamid):
         except:
             pass
 
-    if status["researchPaper"]==False:
+    if status["researchPaper"]["approval"]==False:
         try:
             print("execute")
             col = db['registeredStudentsData']
