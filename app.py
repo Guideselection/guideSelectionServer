@@ -247,10 +247,29 @@ def check_data(mailid,password):
 
         if result:
             try:
-                msg = Message(f'Your OTP is {otp}',  # Email subject
+                msg = Message("One-Time Password (OTP) for Registration",  # Email subject
                             sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
                             recipients=[mailid])  # Replace with the recipient's email address
-                msg.body = 'This is a test email sent from Flask-Mail'  # Email body
+                # msg.body = 'This is a test email sent from Flask-Mail'  # Email body
+                msg.html = f"""
+                            <html>
+                            <body>
+                                <p>Dear {collection['name']},</p>
+                                <p>Your One-Time Password (OTP) for registration is:</p>
+                                <div style="display: flex; justify-content: center;">
+                                    <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
+                                </div>
+                                <p>Please use this OTP to complete your registration process.</p>
+                                <p>If you did not request this OTP or have any questions, please contact our support team.</p>
+                                <p>Thank you for choosing to register with us.</p>
+                                <br/><br/><br/>
+                                <p>Best Regards,</p>
+                                <p>School of Computing,</p>
+                                <p>Sathyabama Institute of Science & Technology</p>
+                            </body>
+                            </html>
+                            """
+
 
                 mail.send(msg)
 
@@ -474,8 +493,8 @@ def create_collection_single(mailId):
             <li>Project Id - {teamiId}</li>
             <li>Password - {password}</li>
             </ul><br/>
-            <p>Our team will review your project thoroughly and get back to you with feedback.
-            Thank you once again for choosing to work with us.</p><br/><br/><br/>
+            <p>Your guide will review your project thoroughly and get back to you with feedback.
+            </p><br/><br/><br/>
             <p>Best Regards,</p>
             <p>School of Computing,</p>
             <p>Sathyabama Institute of Science & Technology</p>
@@ -614,8 +633,8 @@ def create_collection_duo(mailId1, mailId2):
             <li>Project Id - {teamiId}</li>
             <li>Password - {password}</li>
             </ul><br/>
-            <p>Our team will review your project thoroughly and get back to you with feedback.
-            Thank you once again for choosing to work with us.</p><br/><br/><br/>
+            <p>Your guide will review your project thoroughly and get back to you with feedback.
+            </p><br/><br/><br/>
             <p>Best Regards,</p>
             <p>School of Computing,</p>
             <p>Sathyabama Institute of Science & Technology</p>
@@ -807,19 +826,40 @@ def check_second_Person_mail(mailid):
     print(result)
 
     if result:
-        otp = random.randint(100000,999999)
+        if result["firstTime"]:
+            otp = random.randint(100000,999999)
 
-        try:
-            msg = Message(f'Your OTP is {otp}',  # Email subject
-                        sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
-                        recipients=[mailid])  # Replace with the recipient's email address
-            msg.body = 'This is a test email sent from Flask-Mail'  # Email body
+            try:
+                msg = Message("One-Time Password (OTP) for Registration",  # Email subject
+                            sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
+                            recipients=[mailid])  # Replace with the recipient's email address
+                # msg.body = 'This is a test email sent from Flask-Mail'  # Email body
+                msg.html = f"""
+                            <html>
+                            <body>
+                                <p>Dear {collection['name']},</p>
+                                <p>Your One-Time Password (OTP) for registration is:</p>
+                                <div style="display: flex; justify-content: center;">
+                                    <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
+                                </div>
+                                <p>Please use this OTP to complete your registration process.</p>
+                                <p>If you did not request this OTP or have any questions, please contact our support team.</p>
+                                <p>Thank you for choosing to register with us.</p>
+                                <br/><br/><br/>
+                                <p>Best Regards,</p>
+                                <p>School of Computing,</p>
+                                <p>Sathyabama Institute of Science & Technology</p>
+                            </body>
+                            </html>
+                            """
 
-            mail.send(msg)
+                mail.send(msg)
 
-            return jsonify({'email':result['email'], 'firstTime':result['firstTime'] , "name":result["Full Name"], "regNo":result["regNo"], "phoneNo":result["Mobile Number"], "section":result["section"], 'otp':otp})
-        except Exception as e:
-            print(e)
+                return jsonify({'email':result['email'], 'firstTime':result['firstTime'] , "name":result["Full Name"], "regNo":result["regNo"], "phoneNo":result["Mobile Number"], "section":result["section"], 'otp':otp})
+            except Exception as e:
+                print(e)
+                return jsonify({'email':result['email'], 'firstTime':result['firstTime']})
+        else:
             return jsonify({'email':result['email'], 'firstTime':result['firstTime']})
     else:
         return jsonify({"data":"mail not found"})
@@ -1102,7 +1142,7 @@ def getTeamdetails(teamid):
 
 @app.route("/staffLogin/getProfileData/<string:teamid>", methods=["POST"])
 def get_profile_data(teamid):
-    print(request.json)
+    # print(request.json)
     registeredStudentsData = db['registeredStudentsData']
     filter = {"teamId":teamid}
     profileCompleteData = registeredStudentsData.find(filter)
@@ -1260,6 +1300,41 @@ def updatestatusDetails(teamid):
             "payment": data["editedPaymentApproval"]
         }
     }
+
+    if status["documentation"]==False:
+        try:
+            print("execute")
+            col = db['registeredStudentsData']
+            doc = col.find_one({"teamId":teamid})
+            details = doc["documentation"]
+            details["documentation"] = ""
+            col.update_one({"teamId":teamid}, {"$set": {"documentation": details}})
+        except:
+            pass
+
+    if status["ppt"]==False:
+        try:
+            print("execute")
+            col = db['registeredStudentsData']
+            doc = col.find_one({"teamId":teamid})
+            details = doc["documentation"]
+            details["ppt"] = ""
+            col.update_one({"teamId":teamid}, {"$set": {"documentation": details}})
+        except:
+            pass
+
+    if status["researchPaper"]==False:
+        try:
+            print("execute")
+            col = db['registeredStudentsData']
+            doc = col.find_one({"teamId":teamid})
+            details = doc["documentation"]
+            details["researchPaper"] = ""
+            col.update_one({"teamId":teamid}, {"$set": {"documentation": details}})
+        except:
+            pass
+
+
     registeredStudentsData = db['registeredStudentsData']
     filter = {"teamId": teamid}
     comment = {
