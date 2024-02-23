@@ -1385,145 +1385,145 @@ SERVICE_ACCOUNT_FILE = 'Credentials.json'
 FOLDER_ID = '1u0t5YKNrHOIDFISlShezgIINcSJDkF9S'
 
 
+UPLOAD_FOLDER = 'uploads'  # Define the directory name for uploads
+
+# Ensure the upload directory exists
+upload_dir = os.path.join(app.root_path, UPLOAD_FOLDER)
+os.makedirs(upload_dir, exist_ok=True)
+
 # @app.route("/upload", methods=["POST"])
 # def upload():
 #     data = request.files.get("ppt")
 
 @app.route('/studentLogin/uploadppt/<string:teamid>', methods=['PUT'])
 def upload_ppt_file(teamid):
-    data = request.form
-    teamId = data.get("teamId")
-    file = request.files.get("ppt")
-    
-        # Define the directory to save the file
-    upload_dir = f'/path/to/save/'
-    
-    # Create the directory if it doesn't exist
-    os.makedirs(upload_dir, exist_ok=True)
-
     try:
+        data = request.form
+        teamId = data.get("teamId")
+        file = request.files.get("ppt")
         
-        # Save the file to the directory
+        # Ensure file and teamId are present
+        if not (file and teamId):
+            return jsonify({'message': 'Missing data parameters'}), 400
+        
+        # Save the file to the upload directory
         file_path_to_upload = os.path.join(upload_dir, f'{teamId}_ppt_{secure_filename(file.filename)}')
         file.save(file_path_to_upload)
 
-        # Upload file to Google Drive
+        # Upload file to Google Drive (Assuming the method driveAPI.upload_file_to_drive() is correctly implemented)
         file_name = os.path.basename(file_path_to_upload)
         file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
 
         # Get the file link
         ppt_file_link = f'https://drive.google.com/file/d/{file_id}'
 
-        print(teamid)
-        filter = {"teamId":teamid}
+        # Update the database with the file link
+        filter = {"teamId": teamid}
         collection = db["registeredStudentsData"]
         doc = collection.find_one(filter)
-        doc["documentation"]["ppt"] = ppt_file_link
-        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
-
-
-        # Cleanup: Delete the temporary file (if needed)
-        os.remove(file_path_to_upload)
-
-        if result:
-            return jsonify({'message': 'Success'})
+        if doc:
+            doc["documentation"]["ppt"] = ppt_file_link
+            result = collection.update_one(filter, {"$set": {"documentation": doc["documentation"]}})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            if result.modified_count:
+                return jsonify({'message': 'Success'}), 200
+            else:
+                return jsonify({'message': 'Database update failed'}), 500
         else:
-            return jsonify({'message': 'Fail'})
-    except:
-        return jsonify({'message': 'Fail'})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            return jsonify({'message': 'Team ID not found'}), 404
+    
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 
 
 @app.route('/studentLogin/uploaddoc/<string:teamid>', methods=['PUT'])
-def upload_researchPaper_file(teamid):
-    data = request.form
-    teamId = data.get("teamId")
-    file = request.files.get("documentation")
-    
-        # Define the directory to save the file
-    upload_dir = f'/path/to/save/'
-    
-    # Create the directory if it doesn't exist
-    os.makedirs(upload_dir, exist_ok=True)
-
+def upload_doc_file(teamid):
     try:
-    
-        # Save the file to the directory
+        data = request.form
+        teamId = data.get("teamId")
+        file = request.files.get("documentation")
+        
+        # Ensure file and teamId are present
+        if not (file and teamId):
+            return jsonify({'message': 'Missing data parameters'}), 400
+        
+        # Save the file to the upload directory
         file_path_to_upload = os.path.join(upload_dir, f'{teamId}_documentation_{secure_filename(file.filename)}')
         file.save(file_path_to_upload)
 
-        # Upload file to Google Drive
+        # Upload file to Google Drive (Assuming the method driveAPI.upload_file_to_drive() is correctly implemented)
         file_name = os.path.basename(file_path_to_upload)
         file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
 
         # Get the file link
         documentation_file_link = f'https://drive.google.com/file/d/{file_id}'
 
-        print(teamid)
-        filter = {"teamId":teamid}
+        # Update the database with the file link
+        filter = {"teamId": teamid}
         collection = db["registeredStudentsData"]
         doc = collection.find_one(filter)
-        doc["documentation"]["documentation"] = documentation_file_link
-        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
-
-
-        # Cleanup: Delete the temporary file (if needed)
-        os.remove(file_path_to_upload)
-
-        if result:
-            return jsonify({'message': 'Success'})
+        if doc:
+            doc["documentation"]["documentation"] = documentation_file_link
+            result = collection.update_one(filter, {"$set": {"documentation": doc["documentation"]}})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            if result.modified_count:
+                return jsonify({'message': 'Success'}), 200
+            else:
+                return jsonify({'message': 'Fail', 'error': 'Database update failed'}), 500
         else:
-            return jsonify({'message': 'Fail'})
-    except:
-        return jsonify({'message': 'Fail'})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            return jsonify({'message': 'Fail', 'error': 'Team ID not found'}), 404
     
+    except Exception as e:
+        return jsonify({'message': 'Fail', 'error': str(e)}), 500
 
 
 
 
 
 @app.route('/studentLogin/uploadrspaper/<string:teamid>', methods=['PUT'])
-def upload_doc_file(teamid):
-    data = request.form
-    teamId = data.get("teamId")
-    file = request.files.get("researchPaper")
-    
-        # Define the directory to save the file
-    upload_dir = f'/path/to/save/'
-    
-    # Create the directory if it doesn't exist
-    os.makedirs(upload_dir, exist_ok=True)
-
+def upload_researchPaper_file(teamid):
     try:
+        # Retrieve data from the request
+        data = request.form
+        teamId = data.get("teamId")
+        file = request.files.get("researchPaper")
         
-        # Save the file to the directory
+        # Ensure file and teamId are present
+        if not (file and teamId):
+            return jsonify({'message': 'Missing data parameters'}), 400
+        
+        # Save the file to the upload directory
         file_path_to_upload = os.path.join(upload_dir, f'{teamId}_researchPaper_{secure_filename(file.filename)}')
         file.save(file_path_to_upload)
 
-        # Upload file to Google Drive
+        # Upload file to Google Drive (Assuming the method driveAPI.upload_file_to_drive() is correctly implemented)
         file_name = os.path.basename(file_path_to_upload)
         file_id = driveAPI.upload_file_to_drive(file_path_to_upload, file_name, FOLDER_ID, SCOPES, SERVICE_ACCOUNT_FILE)
 
         # Get the file link
         researchPaper_file_link = f'https://drive.google.com/file/d/{file_id}'
 
-        print(teamid)
-        filter = {"teamId":teamid}
+        # Update the database with the file link
+        filter = {"teamId": teamid}
         collection = db["registeredStudentsData"]
         doc = collection.find_one(filter)
-        doc["documentation"]["researchPaper"] = researchPaper_file_link
-        result = collection.update_one(filter, {"$set": {"documentation":doc["documentation"]}})
-
-
-        # Cleanup: Delete the temporary file (if needed)
-        os.remove(file_path_to_upload)
-        if result:
-            return jsonify({'message': 'Success'})
+        if doc:
+            doc["documentation"]["researchPaper"] = researchPaper_file_link
+            result = collection.update_one(filter, {"$set": {"documentation": doc["documentation"]}})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            if result.modified_count:
+                return jsonify({'message': 'Success'}), 200
+            else:
+                return jsonify({'message': 'Fail','error': 'Database update failed'}), 500
         else:
-            return jsonify({'message': 'Fail'})
+            os.remove(file_path_to_upload)  # Cleanup: Delete the temporary file
+            return jsonify({'message': 'Fail', 'error': 'Team ID not found'}), 404
     
-    except:
-        return jsonify({'message': 'Fail'})
+    except Exception as e:
+        return jsonify({'message': 'Fail', 'error': str(e)}), 500
 
 
 
