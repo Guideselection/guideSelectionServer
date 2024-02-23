@@ -254,7 +254,7 @@ def check_data(mailid,password):
                 msg.html = f"""
                             <html>
                             <body>
-                                <p>Dear {collection['name']},</p>
+                                <p>Dear {result['name']},</p>
                                 <p>Your One-Time Password (OTP) for registration is:</p>
                                 <div style="display: flex; justify-content: center;">
                                     <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
@@ -837,7 +837,7 @@ def check_second_Person_mail(mailid):
                 msg.html = f"""
                             <html>
                             <body>
-                                <p>Dear {collection['name']},</p>
+                                <p>Dear {result['name']},</p>
                                 <p>Your One-Time Password (OTP) for registration is:</p>
                                 <div style="display: flex; justify-content: center;">
                                     <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
