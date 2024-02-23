@@ -256,8 +256,9 @@ def check_data(mailid,password):
                             <body>
                                 <p>Dear {result['Full Name']},</p>
                                 <p>Your One-Time Password (OTP) for registration is:</p>
-                                <div style="display: flex; justify-content: center;">
-                                    <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
+                                <div style="display: flex; justify-content: center; align-items:center;">
+                                    <h2 style="color: #007bff; display:flex;  align-items:center;  justify-content: center; font-size: 24px; font-weight: bold;">{otp}</h2>
+
                                 </div>
                                 <p>Please use this OTP to complete your registration process.</p>
                                 <p>If you did not request this OTP or have any questions, please contact our support team.</p>
@@ -1523,6 +1524,23 @@ def upload_doc_file(teamid):
     
     except:
         return jsonify({'message': 'Fail'})
+
+
+
+
+@app.route("/staffCredential/<string:mailId>", methods=["POST"])
+def staffchangepassword(mailId):
+    updatecredentials=request.json
+    print(updatecredentials)
+    staffcredentials= db['facultycredentials']
+    filter = {"mailId":mailId}
+    updatedResult = staffcredentials.update_one(filter, {"$set": updatecredentials })
+
+    if updatedResult.modified_count == 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
+
 
 
 
