@@ -254,7 +254,7 @@ def check_data(mailid,password):
                 msg.html = f"""
                             <html>
                             <body>
-                                <p>Dear {result['name']},</p>
+                                <p>Dear {result['Full Name']},</p>
                                 <p>Your One-Time Password (OTP) for registration is:</p>
                                 <div style="display: flex; justify-content: center;">
                                     <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
@@ -275,7 +275,7 @@ def check_data(mailid,password):
 
                 return jsonify({"is_account_available":"true", "Is_Email_sent":"true","_id":str(id), "OTP":otp, "token":token, "token_for_first_time":tokenforfirsttime , "name":result["Full Name"], "regNo":result["regNo"], "phoneNo":result["Mobile Number"], "section":result["section"],  "first_time":"true"})
             except Exception as e:
-                print(e)
+                print(e,"error")
                 return jsonify({"is_account_available":"true" ,"_id":str(id), "Is_Email_sent":"false", "first_time":"true"})
         else:
             return jsonify({'is_account_available': "false" , "Is_Email_sent":"false"})
@@ -837,7 +837,7 @@ def check_second_Person_mail(mailid):
                 msg.html = f"""
                             <html>
                             <body>
-                                <p>Dear {result['name']},</p>
+                                <p>Dear {result['Full Name']},</p>
                                 <p>Your One-Time Password (OTP) for registration is:</p>
                                 <div style="display: flex; justify-content: center;">
                                     <h2 style="color: #007bff; font-size: 24px; font-weight: bold;">{otp}</h2>
