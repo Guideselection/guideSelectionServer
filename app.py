@@ -882,7 +882,7 @@ def update_second_user_credentials():
 @app.route("/studentLogin/getStudentData/<string:mailid>", methods=["POST"])
 def getStudentdata(mailid):
     registeredStudentsData = db['registeredStudentsData']
-    filter = {"mailId":mailid}
+    filter = {"teamid":mailid}
     print(filter)
     studentCompleteData = registeredStudentsData.find(filter)
     # print(studentCompleteData[0])
@@ -964,6 +964,7 @@ def getStudentdata(mailid):
 
         comments.append(student["comments"])
 
+    print(studentData)
     guideFilter = {"University EMAIL ID":studentData[0]["selectedGuideMailId"]}
     result = db['facultylist'].find(guideFilter)
     guideImage=""
