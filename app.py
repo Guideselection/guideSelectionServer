@@ -882,7 +882,7 @@ def update_second_user_credentials():
 @app.route("/studentLogin/getStudentData/<string:mailid>", methods=["POST"])
 def getStudentdata(mailid):
     registeredStudentsData = db['registeredStudentsData']
-    filter = {"teamid":mailid}
+    filter = {"teamId":mailid}
     print(filter)
     studentCompleteData = registeredStudentsData.find(filter)
     # print(studentCompleteData[0])
@@ -1541,6 +1541,31 @@ def staffchangepassword(mailId):
         return jsonify({"message": "Success"})
     else:
         return jsonify({"message": "Fail"})
+
+
+@app.route("/staffLogin/staffDashboard/fetchProblemStatements/<string:mailid>", methods={"POST"})
+def fetchProblemStatements(mailid):
+    filter = {"University EMAIL ID":mailid}
+    collection = db["facultylist"]
+    res = collection.find_one(filter)
+    # print(res)
+    ps=res.get("problemStatements", [])
+    return jsonify({"message":"Success", "problemStatements":ps})
+
+
+
+@app.route("/staffLogin/staffDashboard/addProblemStatements/<string:mailid>", methods={"POST"})
+def addProblemStatements(mailid):
+    data = request.json
+    # data = {"problemStatement":"something"}
+    filter = {"University EMAIL ID":mailid}
+    collection = db["facultylist"]
+    res = collection.update_one(filter, {"$push": {"problemStatements":data["problemStatement"]}})
+    if res.modified_count == 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
+
 
 
 
