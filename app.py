@@ -420,7 +420,7 @@ def create_collection_single(mailId):
     collection_data["marks"] = 0
 
 
-    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000).rjust(4,'0')}"
     collection_data["teamId"] = teamiId
 
     users_collection = db["users"]
@@ -556,7 +556,7 @@ def create_collection_duo(mailId1, mailId2):
     collection = db["registeredStudentsData"]
 
 
-    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000)}"
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(collection_data['regNo'])%10000).rjust(4,'0')}"
     collection_data["teamId"] = teamiId
 
     users_collection = db["users"]
@@ -1576,7 +1576,69 @@ def addProblemStatements(mailid):
 #     c = db["users"]
 #     print(c.find_one(filter1)["image"])
 #     return jsonify({'message': 'Fail'})
+
+
+@app.route("/studentlogin/dashboard/change_password/<string:teamId>", methods=["POST"])
+def studentchangepassword(teamId):
+    updatecredentials = request.json
+    registeredUsers = db['registeredUsers']
+    users = db['users']
+    registeredStudentsData = db['registeredStudentsData']
+
+    filter_registeredUsers = {"teamId": teamId}
+    filter_users = {"teamId": teamId}
+    filter_registeredStudentsData= {"teamId": teamId}
+
+
+    updatedResult = registeredUsers.update_many(filter_registeredUsers, {"$set": updatecredentials})
+    updatedResult = users.update_many(filter_users, {"$set": updatecredentials})
+    updatedResult = registeredStudentsData.update_one(filter_registeredStudentsData, {"$set": updatecredentials})
+
+    if updatedResult.modified_count > 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
+
+
+
+
+
+@app.route("/staffLogin/staffDashboard/selectStudent/<string:mailid>", methods=["POST"])
+def selectStudentDirectlyByStaff(mailid):
+    # data = request.json
+    data = {
+        "team":False,
+        "regNo":"41111354",
+        "p2regNo":"41111355",
+        "password":"abcd"
+            }
+
     
+    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(data['regNo'])%10000).rjust(4,'0')}"
+
+    users_collection = db["users"]
+    user = users_collection.find_one({"regNo":data["regNo"]})
+    print(user)
+
+    if user:
+        users_collection.update_one({"regNo":data["regNo"]}, {"$set":{"firstTime":False}})
+
+        reggisterdusers_collection = db["registeredUsers"]
+        reggisterdusers_collection.insert_one(
+            {
+            "email": user.get("email",""),
+            "password": data.get("password",""),
+            "guideMailId": mailid,
+            "update_vacancies_data": "",
+            "teamId": teamiId
+            }
+        )
+
+
+    return jsonify({"message":"success"})
+
+    
+
 
 
 
