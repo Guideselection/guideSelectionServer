@@ -100,9 +100,6 @@ service = build('drive', 'v3', credentials=creds)
 
 
 
-client = MongoClient('mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net/SIST_Courses?retryWrites=true&w=majority')
-
-# mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net
 
 
 db = client.SIST_Courses
