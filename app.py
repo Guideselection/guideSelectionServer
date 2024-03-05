@@ -25,14 +25,24 @@ app=Flask(__name__)
 CORS(app)
 
 
+#Google Mail Service
+# app = Flask(__name__)
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Replace with your email server
+# app.config['MAIL_PORT'] = 465
+# app.config['MAIL_USE_TLS'] = False
+# app.config['MAIL_USE_SSL'] = True
+# app.config['MAIL_USERNAME'] = 'guideselection.cse@sathyabama.ac.in'  # Replace with your email address
+# app.config['MAIL_PASSWORD'] = 'ucik ubno mwzi onwe'  # Replace with your email password
 
-app = Flask(__name__)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Replace with your email server
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'guideselection.cse@sathyabama.ac.in'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'ucik ubno mwzi onwe'  # Replace with your email password
+#Elastic Mail Service
+app.config['MAIL_SERVER'] = 'smtp.elasticemail.com'  # Replace with your email server
+app.config['MAIL_PORT'] = 2525
+# app.config['MAIL_USE_TLS'] = False
+# app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'guideselectionportal@cse-soc.com'  # Replace with your email address
+app.config['MAIL_PASSWORD'] = 'AB9F5833D7A214A633D1C4BF37F6F1C9413A'  # Replace with your email password
+
+
 
 mail = Mail(app)
 
@@ -896,6 +906,15 @@ def getStudentdata(mailid):
     studentImage2=""
     studentImage1=""
 
+    try:
+        filterguide = {"University EMAIL ID":studentCompleteData[0]["selectedGuideMailId"]}
+        collection = db["facultylist"]
+        res = collection.find_one(filterguide)
+        # print(res)
+        ps=res.get("problemStatements", [])
+    except:
+        ps=[]
+
     # Iterate over the cursor to extract data
     for student in studentCompleteData:
         # Do something with each document in the cursor
@@ -916,9 +935,8 @@ def getStudentdata(mailid):
                 "p2section":student["p2section"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
-
-
             })
+
             studentImage1 = student["image"]
             studentImage2 = student["p2image"]
         else:
@@ -983,6 +1001,7 @@ def getStudentdata(mailid):
                         "comments":comments[0],
                         "studentImage1":studentImage1,
                         "studentImage2":studentImage2,
+                        "problemStatements":ps
                     })
 
 
@@ -1010,7 +1029,7 @@ def checkStaffLogin(mailId, password):
     if result:
         token = generate_token(mailId)
         if str(password)==result["password"]:
-            return jsonify({"is_account_available":"true", "Is_Password_Correct":"true", "token":token  })
+            return jsonify({"is_account_available":"true", "Is_Password_Correct":"true", "token":token})
         else:
             return jsonify({"is_account_available":"true", "Is_Password_Correct":"false" })
     else:
@@ -1594,7 +1613,7 @@ def studentchangepassword(teamId):
     updatedResult = users.update_many(filter_users, {"$set": updatecredentials})
     updatedResult = registeredStudentsData.update_one(filter_registeredStudentsData, {"$set": updatecredentials})
 
-    if updatedResult.modified_count > 1:
+    if updatedResult.modified_count >= 1:
         return jsonify({"message": "Success"})
     else:
         return jsonify({"message": "Fail"})
@@ -1605,40 +1624,352 @@ def studentchangepassword(teamId):
 
 @app.route("/staffLogin/staffDashboard/selectStudent/<string:mailid>", methods=["POST"])
 def selectStudentDirectlyByStaff(mailid):
-    # data = request.json
-    data = {
-        "team":False,
-        "regNo":"41111354",
-        "p2regNo":"41111355",
-        "password":"abcd"
-            }
+    # return jsonify({"message":"Success"})
+    data = request.json
+    # data = {
+    #     "team":False,
+    #     "regNo":"41111354",
+    #     "p2regNo":"41111355",
+    #     "password":"abcd",
+    #     "selectedGuide":"Albert"
+    #         }
+    print(data)
 
-    
-    teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(data['regNo'])%10000).rjust(4,'0')}"
+    if data.get("team"):
+        try:
+            teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(data['regNo'])%10000).rjust(4,'0')}"
 
-    users_collection = db["users"]
-    user = users_collection.find_one({"regNo":data["regNo"]})
-    print(user)
-
-    if user:
-        users_collection.update_one({"regNo":data["regNo"]}, {"$set":{"firstTime":False}})
-
-        reggisterdusers_collection = db["registeredUsers"]
-        reggisterdusers_collection.insert_one(
-            {
-            "email": user.get("email",""),
-            "password": data.get("password",""),
-            "guideMailId": mailid,
-            "update_vacancies_data": "",
-            "teamId": teamiId
-            }
-        )
+            users_collection = db["users"]
+            user = users_collection.find_one({"regNo":data["regNo"]})
+            user2 = users_collection.find_one({"regNo":data["p2regNo"]})
+        
+            # print(user)
+        except Exception as e:
+            return jsonify({"message":"Fail", "error":"register no not found"})
 
 
-    return jsonify({"message":"success"})
+        if user:
 
-    
+            try:
+                reggisterdusers_collection = db["registeredUsers"]
+                reggisterdusers_collection.insert_one(
+                    {
+                    "email": user.get("email",""),
+                    "password": data.get("password",""),
+                    "guideMailId": mailid,
+                    "update_vacancies_data": "",
+                    "teamId": teamiId
+                    }
+                )
+                reggisterdusers_collection.insert_one(
+                    {
+                    "email": user2.get("email",""),
+                    "password": data.get("password",""),
+                    "guideMailId": mailid,
+                    "update_vacancies_data": "",
+                    "teamId": teamiId
+                    }
+                )
+            except Exception as e:
+                return jsonify({"message":"Fail", "error":"student is already selected"})
+            try:
 
+                users_collection.update_one({"regNo":data["regNo"]}, {"$set":{"firstTime":False, "teamId":teamiId, "password":data.get("password", "")}})
+                users_collection.update_one({"regNo":data["p2regNo"]}, {"$set":{"firstTime":False, "teamId":teamiId, "password":data.get("password", "")}})
+
+
+                collection_data = {}
+
+                collection_data["image"] = user["image"]
+                collection_data["p2image"] = user2["image"]
+
+                collection_data["teamId"] = teamiId
+                status = {
+                    "documentation":False,
+                    "ppt":False,
+                    "guideApproval":False,
+                    "researchPaper":{
+                        "approval":False,
+                        "communicated":False,
+                        "accepted":False,
+                        "payment":False
+                    }
+                }
+
+                documents = {
+                    "researchPaper":None,
+                    "documentation":None,
+                    "ppt":None
+                }
+
+                comments = []
+
+                collection_data["status"] = status
+                collection_data["documentation"] = documents
+                collection_data["comments"] = comments
+                collection_data["editProjectDetails"] = True
+                collection_data["marks"] = 0
+                collection_data["p2marks"] = 0
+
+                collection_data["password"]= data.get("password","")
+                collection_data["team"] = True
+                collection_data["name"] = user["Full Name"]
+                collection_data["regNo"] = user["regNo"]
+                collection_data["phoneNo"] = user.get("Mobile Number","")
+                collection_data["mailId"] = user.get("email")
+                collection_data["section"] = user.get("section","")
+
+                collection_data["p2name"] = user2["Full Name"]
+                collection_data["p2regNo"] = user2["regNo"]
+                collection_data["p2phoneNo"] = user2.get("Mobile Number","")
+                collection_data["p2mailId"] = user2.get("email")
+                collection_data["p2section"] = user2.get("section","")
+
+                collection_data["projectTitle"] = ""
+                collection_data["projectDesc"] = ""
+                collection_data["projectDomain"] = ""
+                # collection_data["selectedGuide"] = ""
+                collection_data["selectedGuideMailId"] = mailid
+
+
+                # registeredStudents_collection = db["registeredStudentsData"]
+                # registeredStudents_collection.insert_one(collection_data)
+
+                faculty_collection = db["facultylist"]
+                document = faculty_collection.find_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] })
+                updated_data = {"allStudents":[], "allTeams":[]}
+                collection_data["selectedGuide"] = document["NAME OF THE FACULTY"]
+
+                registeredStudents_collection = db["registeredStudentsData"]
+                registeredStudents_collection.insert_one(collection_data)
+
+
+                if document:
+                    if "allStudents" in document:
+                        document["allStudents"].append(user.get("email"))
+                        document["allStudents"].append(user2.get("email"))
+
+                    else:
+                        document["allStudents"] = [user.get("email"), user2.get("email")]
+
+                    if "allTeams" in document:
+                        document["allTeams"].append(teamiId)
+                    else:
+                        document["allTeams"] = [teamiId]
+
+                updated_data["allStudents"] = document["allStudents"]
+                updated_data["allTeams"] = document["allTeams"]
+
+
+                # print(filter_data, updated_data)
+
+                # Update the data in the collection
+                
+                result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+
+                try:
+                    msg = Message(f'Guide Selection Confirmation',  # Email subject
+                                sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
+                                recipients=[user.get("email"), user2.get("email")])  # Replace with the recipient's email address
+                    msg.html = f"""
+                    <html>
+                    <body>
+                        <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
+                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <b>Guide Details:</b><br/>
+                        <ul>
+                        <li>Guide Name - {collection_data["selectedGuide"]}</li>
+                        </ul><br/>
+                        
+                        <ul>
+                        <b>Login Credentials:</b><br/>
+                        <li>Project Id - {teamiId}</li>
+                        <li>Password - {data.get("password")}</li>
+                        </ul><br/>
+                        <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
+                        <p>Best Regards,</p>
+                        <p>School of Computing,</p>
+                        <p>Sathyabama Institute of Science & Technology</p>
+                    </body>
+                    </html>
+                    """
+
+                    mail.send(msg)
+                    return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
+                except Exception as e:
+                    print(e)
+                    return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+
+            
+            except Exception as e:
+                print(e)
+                return jsonify({"message":"Fail", "error":"failed to select student"})
+        else:
+            return jsonify({"message":"Fail", "error":"register no not found"})
+        pass
+    else:
+
+        try:
+            teamiId = f"CSE-{str(datetime.now().year % 100 + 1)}-{str(int(data['regNo'])%10000).rjust(4,'0')}"
+
+            users_collection = db["users"]
+            user = users_collection.find_one({"regNo":data["regNo"]})
+            print(user)
+        except Exception as e:
+            return jsonify({"message":"Fail", "error":"register no not found"})
+
+
+        if user:
+
+            try:
+                reggisterdusers_collection = db["registeredUsers"]
+                reggisterdusers_collection.insert_one(
+                    {
+                    "email": user.get("email",""),
+                    "password": data.get("password",""),
+                    "guideMailId": mailid,
+                    "update_vacancies_data": "",
+                    "teamId": teamiId
+                    }
+                )
+            except Exception as e:
+                return jsonify({"message":"Fail", "error":"student is already selected"})
+            try:
+
+                users_collection.update_one({"regNo":data["regNo"]}, {"$set":{"firstTime":False, "teamId":teamiId, "password":data.get("password", "")}})
+
+
+                collection_data = {}
+
+                collection_data["image"] = user["image"]
+                collection_data["teamId"] = teamiId
+                status = {
+                    "documentation":False,
+                    "ppt":False,
+                    "guideApproval":False,
+                    "researchPaper":{
+                        "approval":False,
+                        "communicated":False,
+                        "accepted":False,
+                        "payment":False
+                    }
+                }
+
+                documents = {
+                    "researchPaper":None,
+                    "documentation":None,
+                    "ppt":None
+                }
+
+                comments = []
+
+                collection_data["status"] = status
+                collection_data["documentation"] = documents
+                collection_data["comments"] = comments
+                collection_data["editProjectDetails"] = True
+                collection_data["marks"] = 0
+                collection_data["password"]= data.get("password","")
+                collection_data["team"] = False
+                collection_data["name"] = user["Full Name"]
+                collection_data["regNo"] = user["regNo"]
+                collection_data["phoneNo"] = user.get("Mobile Number","")
+                collection_data["mailId"] = user.get("email")
+                collection_data["section"] = user.get("section","")
+                collection_data["projectTitle"] = ""
+                collection_data["projectDesc"] = ""
+                collection_data["projectDomain"] = ""
+                # collection_data["selectedGuide"] = data.get("selectedGuide", "")
+                collection_data["selectedGuideMailId"] = mailid
+
+
+                # registeredStudents_collection = db["registeredStudentsData"]
+                # registeredStudents_collection.insert_one(collection_data)
+
+                faculty_collection = db["facultylist"]
+                document = faculty_collection.find_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] })
+                updated_data = {"allStudents":[], "allTeams":[]}
+
+                collection_data["selectedGuide"] = document["NAME OF THE FACULTY"]
+
+                registeredStudents_collection = db["registeredStudentsData"]
+                registeredStudents_collection.insert_one(collection_data)
+
+                if document:
+                    if "allStudents" in document:
+                        document["allStudents"].append(user.get("email"))
+                    else:
+                        document["allStudents"] = [user.get("email")]
+
+                    if "allTeams" in document:
+                        document["allTeams"].append(teamiId)
+                    else:
+                        document["allTeams"] = [teamiId]
+
+                updated_data["allStudents"] = document["allStudents"]
+                updated_data["allTeams"] = document["allTeams"]
+
+
+                # print(filter_data, updated_data)
+
+                # Update the data in the collection
+                vacancies = document["TOTAL BATCHES"]
+                maxTeams  = document["MAX TEAMS"]
+                
+                result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+                result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': {"MAX TEAMS":maxTeams-1, "TOTAL BATCHES":vacancies-1}})
+            
+                
+                try:
+                    msg = Message(f'Guide Selection Confirmation',  # Email subject
+                                sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
+                                recipients=[user.get("email")])  # Replace with the recipient's email address
+                    msg.html = f"""
+                    <html>
+                    <body>
+                        <p>Dear {collection_data['name']},</p>
+                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <b>Guide Details:</b><br/>
+                        <ul>
+                        <li>Guide Name - {collection_data["selectedGuide"]}</li>
+                        </ul><br/>
+                        
+                        <ul>
+                        <b>Login Credentials:</b><br/>
+                        <li>Project Id - {teamiId}</li>
+                        <li>Password - {data.get("password")}</li>
+                        </ul><br/>
+                        <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
+                        <p>Best Regards,</p>
+                        <p>School of Computing,</p>
+                        <p>Sathyabama Institute of Science & Technology</p>
+                    </body>
+                    </html>
+                    """
+
+                    mail.send(msg)
+                    return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
+                except Exception as e:
+                    print(e)
+                    return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+
+ 
+            
+            
+            except Exception as e:
+                return jsonify({"message":"Fail", "error":"failed to select student"})
+        else:
+            return jsonify({"message":"Fail", "error":"register no not found"})
+
+ 
+@app.route("/staffLogin/staffDashboard/fetchMaxTeams/<string:mailid>", methods=["POST"])
+def fetchmaxteam(mailid):
+    facultylist= db['facultylist']
+    filter={"University EMAIL ID":mailid}
+    findmaxteam= facultylist.find_one(filter)
+
+    return jsonify({
+        "maxTeams":findmaxteam["MAX TEAMS"]
+    })
 
 
 
