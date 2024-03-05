@@ -24,6 +24,10 @@ from google.oauth2 import service_account
 app=Flask(__name__)
 CORS(app)
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 #Google Mail Service
 # app = Flask(__name__)
@@ -40,7 +44,7 @@ app.config['MAIL_PORT'] = 2525
 # app.config['MAIL_USE_TLS'] = False
 # app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'guideselectionportal@cse-soc.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'AB9F5833D7A214A633D1C4BF37F6F1C9413A'  # Replace with your email password
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD") # Replace with your email password
 
 
 
@@ -48,9 +52,8 @@ mail = Mail(app)
 
 
 
-client = MongoClient('mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net/SIST_Courses?retryWrites=true&w=majority')
+client = MongoClient(os.getenv("MONGO_URI"))
 
-# mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net
 
 db = client.SIST_Courses
 
@@ -154,7 +157,7 @@ def update_all_data():
 
 
 
-secret_key = 'SathyabamaInstituteOfScienceAndTechnology'
+secret_key = os.getenv("SECRET_KEY")
 
 def generate_token(email):
     # Define the payload for the token (you can include additional claims if needed)
