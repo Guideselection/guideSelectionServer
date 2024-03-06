@@ -44,7 +44,7 @@ app.config['MAIL_PORT'] = 2525
 # app.config['MAIL_USE_TLS'] = False
 # app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'guideselectionportal@cse-soc.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD") # Replace with your email password
+app.config['MAIL_PASSWORD'] = str(os.getenv("MAIL_PASSWORD")) # Replace with your email password
 
 
 
@@ -52,7 +52,7 @@ mail = Mail(app)
 
 
 
-client = MongoClient(os.getenv("MONGO_URI"))
+client = MongoClient(str(os.getenv("MONGO_URI")))
 print(os.getenv("MONGO_URI")
 
 
@@ -158,7 +158,7 @@ def update_all_data():
 
 
 
-secret_key = os.getenv("SECRET_KEY")
+secret_key = str(os.getenv("SECRET_KEY"))
 
 def generate_token(email):
     # Define the payload for the token (you can include additional claims if needed)
