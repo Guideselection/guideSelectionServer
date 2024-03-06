@@ -53,7 +53,7 @@ mail = Mail(app)
 
 
 client = MongoClient(str(os.getenv("MONGO_URI")))
-print(os.getenv("MONGO_URI")
+print(os.getenv("MONGO_URI"))
 
 
 db = client.SIST_Courses
