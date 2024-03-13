@@ -1770,7 +1770,12 @@ def selectStudentDirectlyByStaff(mailid):
 
                 # Update the data in the collection
                 
+                # result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+                vacancies = document["TOTAL BATCHES"]
+                maxTeams  = document["MAX TEAMS"]
+                
                 result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+                result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': {"MAX TEAMS":maxTeams-1, "TOTAL BATCHES":vacancies-1}})
 
                 try:
                     msg = Message(f'Guide Selection Confirmation',  # Email subject
