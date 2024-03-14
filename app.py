@@ -1650,6 +1650,7 @@ def selectStudentDirectlyByStaff(mailid):
         
             # print(user)
         except Exception as e:
+            print({"error":"register no not found"})
             return jsonify({"message":"Fail", "error":"register no not found"})
 
 
@@ -1676,6 +1677,7 @@ def selectStudentDirectlyByStaff(mailid):
                     }
                 )
             except Exception as e:
+                print({"message":"Fail", "error":"student is already selected"})
                 return jsonify({"message":"Fail", "error":"student is already selected"})
             try:
 
@@ -1815,6 +1817,7 @@ def selectStudentDirectlyByStaff(mailid):
                 print(e)
                 return jsonify({"message":"Fail", "error":"failed to select student"})
         else:
+            print({"message":"Fail", "error":"register no not found"})
             return jsonify({"message":"Fail", "error":"register no not found"})
         pass
     else:
