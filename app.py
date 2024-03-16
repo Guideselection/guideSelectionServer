@@ -204,21 +204,23 @@ def check_account_avalable(mail):
 
 
 
-@app.route('/api/check/<string:mailid>/<string:password>', methods=['GET'])
-def check_data(mailid,password):
+@app.route('/api/check/<string:mailid>/<string:password1>', methods=['GET'])
+def check_data(mailid,password1):
     # Get the update data from the request
-
+    password = request.json.passcode
 
     if str(mailid)[:6]=="CSE-25":
         filter = {"teamId":mailid}
         collection = db.users  # Replace <collection_name> with the name of your collection
         result = collection.find_one(filter)
 
-        token = generate_token(result["email"])
+        # token = generate_token(result["email"])
 
         if result is None:
             return jsonify({'is_account_available': "false"})
         else:
+            token = generate_token(result["email"])
+            
             if str(password)==str(result['password']):
                 return jsonify({'is_account_available': "true",
                                 "is_password_correct":"true",
