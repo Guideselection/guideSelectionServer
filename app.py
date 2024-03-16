@@ -204,11 +204,11 @@ def check_account_avalable(mail):
 
 
 
-@app.route('/api/check/<string:mailid>/<string:password1>', methods=['GET'])
+@app.route('/api/check/<string:mailid>/<string:password1>', methods=['POST'])
 def check_data(mailid,password1):
     # Get the update data from the request
-    password = request.json.passcode
-
+    data = request.json
+    password = data.get("passcode")
     if str(mailid)[:6]=="CSE-25":
         filter = {"teamId":mailid}
         collection = db.users  # Replace <collection_name> with the name of your collection
