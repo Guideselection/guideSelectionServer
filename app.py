@@ -1027,8 +1027,10 @@ def updateProjectDetails(mailid):
     else:
         return jsonify({'message': 'Fail'})
 
-@app.route("/staffLogin/check/<string:mailId>/<string:password>", methods=["GET"])
-def checkStaffLogin(mailId, password):
+@app.route("/staffLogin/check/<string:mailId>/<string:password1>", methods=["POST"])
+def checkStaffLogin(mailId, password1):
+    data = request.json
+    password = data.get("passcode")
     facultycredentials = db["facultycredentials"]
     filter = {"mailId": mailId}
     result = facultycredentials.find_one(filter)
