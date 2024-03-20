@@ -1022,7 +1022,11 @@ def updateProjectDetails(mailid):
     updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
     updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
 
-    if updatedResult.modified_count==1:
+    filter2 = {"p2mailId":mailid}
+    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
+    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"editProjectDetails":False}})
+
+    if updatedResult.modified_count==1 or updatedResult2.modified_count==1:
         return jsonify({"message":"Success"})
     else:
         return jsonify({'message': 'Fail'})
