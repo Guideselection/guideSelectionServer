@@ -907,9 +907,11 @@ def getStudentdata(mailid):
     # Initialize an empty list to store the results
     studentData = []
     projectDetails = []
+    projectDetails2 = []
     projectStatus = []
     documentation = []
     comments = []
+    comments2 = []
     studentImage2=""
     studentImage1=""
 
@@ -938,15 +940,28 @@ def getStudentdata(mailid):
                 "p2mailId":student["p2mailId"],
                 "teamId":student["teamId"],
                 "editProjectDetails":student["editProjectDetails"],
+                "editProjectDetails2":student.get("p2editProjectDetails",False),
                 "section":student["section"],
                 "p2section":student["p2section"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
 
+            projectDetails2.append({
+            "projectTitle": student.get("p2projectTitle",""),
+            "projectDesc": student.get("p2projectDesc",""),
+            "projectDomain": student.get("p2projectDomain","")
+        })
+            
+            comments2.append(student.get("p2comments",[]))
             studentImage1 = student["image"]
             studentImage2 = student["p2image"]
         else:
+            comments2.append(student.get("p2comments",[]))
+            projectDetails2.append({
+            "projectTitle": student.get("p2projectTitle",""),
+            "projectDesc": student.get("p2projectDesc",""),
+            "projectDomain": student.get("p2projectDomain","")})
             studentData.append({
             # "student_id": str(student["_id"]),
                 "name": student["name"],
@@ -956,6 +971,7 @@ def getStudentdata(mailid):
                 "teamId":student["teamId"],
                 "section":student["section"],
                 "editProjectDetails":student["editProjectDetails"],
+                "editProjectDetails2":student.get("p2editProjectDetails",False),
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
@@ -1002,15 +1018,16 @@ def getStudentdata(mailid):
     return jsonify({    
                         "studentData":studentData,
                         "projectDetails":projectDetails,
+                        "projectDetails2":projectDetails2,
                         "projectStatus":projectStatus,
                         "documentation":documentation,
                         "guideImage":guideImage,
                         "comments":comments[0],
+                        "comments2":comments2[0],
                         "studentImage1":studentImage1,
                         "studentImage2":studentImage2,
                         "problemStatements":ps
                     })
-
 
 
 @app.route("/studentLogin/updateProjectDetails/<string:mailid>", methods=["POST"])
@@ -1020,16 +1037,17 @@ def updateProjectDetails(mailid):
     filter = {"mailId":mailid}
     print(filter)
     updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
-    updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+    updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False, "p2editProjectDetails":False}})
 
     filter2 = {"p2mailId":mailid}
     updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
-    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"editProjectDetails":False}})
+    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"editProjectDetails":False, "p2editProjectDetails":False}})
 
-    if updatedResult.modified_count==1 or updatedResult2.modified_count==1:
+    if updatedResult.modified_count>=1 or updatedResult2.modified_count>=1:
         return jsonify({"message":"Success"})
     else:
         return jsonify({'message': 'Fail'})
+    
 
 @app.route("/staffLogin/check/<string:mailId>/<string:password1>", methods=["POST"])
 def checkStaffLogin(mailId, password1):
@@ -1100,7 +1118,6 @@ def getStudentsdata(mailid):
     return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData, "guideImg":guideImg })
 
 
-
 @app.route("/staffLogin/getProfileData/profile_details/<string:teamid>", methods=["POST"])
 def getTeamdetails(teamid):
     registeredStudentsData = db['registeredStudentsData']
@@ -1120,7 +1137,8 @@ def getTeamdetails(teamid):
         "title": team_data["projectTitle"],
         "desc": team_data["projectDesc"],
         "domain": team_data["projectDomain"],
-        "projectApproval":team_data["editProjectDetails"]
+        "projectApproval":team_data["editProjectDetails"],
+        
     })
 
     guidedetails.append({
@@ -1154,6 +1172,7 @@ def getTeamdetails(teamid):
         "studentDetailsTwo" : studentdetailstwo[0],
         "projectdetails": projectdetails[0],
         "guidedetails": guidedetails[0],
+        "type":team_data.get("projectType","")
     })
 
     else:
@@ -1171,8 +1190,87 @@ def getTeamdetails(teamid):
             "studentDetailsOne": studentdetailsone[0],
             "projectdetails": projectdetails[0],
             "guidedetails": guidedetails[0],
+            "type":team_data.get("projectType","")
         })
     
+
+
+
+@app.route("/staffLogin/getProfileData/profile_details2/<string:teamid>", methods=["POST"])
+def getTeamdetails2(teamid):
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
+    team_data = registeredStudentsData.find_one(filter)
+    if not team_data:
+        return jsonify({"error": "Team not found"}), 404
+
+    studentdetailsone = []
+    studentdetailstwo = []
+
+    projectdetails = []
+    guidedetails = []
+
+
+    projectdetails.append({
+        "title": team_data["p2projectTitle"],
+        "desc": team_data["p2projectDesc"],
+        "domain": team_data["p2projectDomain"],
+        "projectApproval":team_data["p2editProjectDetails"]
+    })
+
+    guidedetails.append({
+        "projectId": team_data["teamId"],
+        "guideName": team_data["selectedGuide"],
+        "guideMaidId": team_data["selectedGuideMailId"]
+    })
+
+
+    if team_data["team"]:
+        studentdetailsone.append({
+            "imgOne":team_data["image"],
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "secOne": team_data["section"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+        })
+        studentdetailstwo.append({
+            "team": team_data["team"],            
+            "fullNameTwo": team_data["p2name"],
+            "regNoTwo": team_data["p2regNo"],
+            "mobileNoTwo": team_data["p2phoneNo"],
+            "emailTwo": team_data["p2mailId"],
+            "secTwo": team_data["p2section"],
+            "imgTwo":team_data["p2image"]
+        })
+        return jsonify({
+        "studentDetailsOne": studentdetailsone[0],
+        "studentDetailsTwo" : studentdetailstwo[0],
+        "projectdetails": projectdetails[0],
+        "guidedetails": guidedetails[0],
+        "type":team_data.get("p2projectType","")
+    })
+
+    else:
+        studentdetailsone.append({
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+            "secOne": team_data["section"],
+            "imgOne":team_data["image"]
+        })
+
+        return jsonify({
+            "studentDetailsOne": studentdetailsone[0],
+            "projectdetails": projectdetails[0],
+            "guidedetails": guidedetails[0],
+            "type":team_data.get("p2projectType","")
+        })
+    
+
 
 @app.route("/staffLogin/getProfileData/<string:teamid>", methods=["POST"])
 def get_profile_data(teamid):
@@ -1192,6 +1290,8 @@ def get_profile_data(teamid):
     guideApproval=[]
     isChecked = []
     comments = []
+    comments2 = []
+
 
 
    
@@ -1270,6 +1370,8 @@ def get_profile_data(teamid):
 
 
         comments.append(team["comments"])
+        comments2.append(team.get("p2comments",[]))
+
 
  
 
@@ -1284,11 +1386,10 @@ def get_profile_data(teamid):
                         "researchPaper":researchPaper[0],
                         "ppt":ppt[0],
                         "guideApproval":guideApproval[0],
-                        "comments":comments[0]
+                        "comments":comments[0],
+                        "comments2":comments2[0]
+
                     })
-
-
-
 @app.route("/staffLogin/updateProjectDetails/<string:teamid>", methods=["POST"])
 def updateProjectDetailsStatus(teamid):
     updatedData = request.json
@@ -1311,10 +1412,28 @@ def updateProjectDetailsStatus(teamid):
     else:
         return jsonify({"message": "Fail"})
 
-    
 
+@app.route("/staffLogin/updateProjectDetails2/<string:teamid>", methods=["POST"])
+def updateProjectDetailsStatus2(teamid):
+    updatedData = request.json
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
 
+    approval_status = updatedData.get("approvalStatus", "")
 
+    # updatedResult = registeredStudentsData.update_one(filter, {"$set": updatedData})
+
+    if approval_status == "approved":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"p2editProjectDetails": False}})
+    elif approval_status == "declined":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"p2editProjectDetails": True}})
+    else:
+        pass
+
+    if updatedResult.modified_count == 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
 
 
 
@@ -1375,6 +1494,10 @@ def updatestatusDetails(teamid):
         today_date: data.get("editedComments", ""),
     }
 
+    comment2 = {
+        today_date: data.get("editedComments2", ""),
+    }
+
     try:
         if comment[today_date]=="":
             pass
@@ -1383,6 +1506,15 @@ def updatestatusDetails(teamid):
             filter,
             {"$push": {"comments": comment}},
         )
+            
+        if comment2[today_date]=="":
+            pass
+        else:
+            registeredStudentsData.update_one(
+            filter,
+            {"$push": {"p2comments": comment2}},
+        )
+            
 
         # Update status and push comment to the 'comments' array
         registeredStudentsData.update_one(
@@ -1406,8 +1538,6 @@ def updatestatusDetails(teamid):
         return jsonify({"message": "Success"})
     except:
         return jsonify({"message": "Fail"})
-
-
 
 
 # Google Drive API credentials
