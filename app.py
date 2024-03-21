@@ -1212,10 +1212,10 @@ def getTeamdetails2(teamid):
 
 
     projectdetails.append({
-        "title": team_data["p2projectTitle"],
-        "desc": team_data["p2projectDesc"],
-        "domain": team_data["p2projectDomain"],
-        "projectApproval":team_data["p2editProjectDetails"]
+        "title": team_data.get("p2projectTitle",""),
+        "desc": team_data.get("p2projectDesc",""),
+        "domain": team_data.get("p2projectDomain",""),
+        "projectApproval":team_data.get("p2editProjectDetails","")
     })
 
     guidedetails.append({
