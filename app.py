@@ -1925,7 +1925,7 @@ def selectStudentDirectlyByStaff(mailid):
                     <html>
                     <body>
                         <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
-                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
                         <b>Guide Details:</b><br/>
                         <ul>
                         <li>Guide Name - {collection_data["selectedGuide"]}</li>
@@ -1936,6 +1936,9 @@ def selectStudentDirectlyByStaff(mailid):
                         <li>Project Id - {teamiId}</li>
                         <li>Password - {data.get("password")}</li>
                         </ul><br/>
+                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                        <br/>
+                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
                         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
                         <p>Best Regards,</p>
                         <p>School of Computing,</p>
@@ -2078,7 +2081,7 @@ def selectStudentDirectlyByStaff(mailid):
                     <html>
                     <body>
                         <p>Dear {collection_data['name']},</p>
-                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
                         <b>Guide Details:</b><br/>
                         <ul>
                         <li>Guide Name - {collection_data["selectedGuide"]}</li>
@@ -2089,6 +2092,9 @@ def selectStudentDirectlyByStaff(mailid):
                         <li>Project Id - {teamiId}</li>
                         <li>Password - {data.get("password")}</li>
                         </ul><br/>
+                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                        <br/>
+                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
                         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
                         <p>Best Regards,</p>
                         <p>School of Computing,</p>
