@@ -1032,21 +1032,34 @@ def getStudentdata(mailid):
 
 @app.route("/studentLogin/updateProjectDetails/<string:mailid>", methods=["POST"])
 def updateProjectDetails(mailid):
-    updatedData = request.json
+    data = request.json
+    updatedData = data.get("updatedData")
+    student = data.get("student")
     registeredStudentsData = db['registeredStudentsData']
     filter = {"mailId":mailid}
-    print(filter)
-    updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
-    updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+    if student == "p1":
+        try:
+            print(filter)
+            updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
+            updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+        except Exception as e:
+            print(e)
+        if updatedResult.modified_count>=1:
+            return jsonify({"message":"Success"})
+        else:
+            return jsonify({'message': 'Fail'})
 
-    filter2 = {"p2mailId":mailid}
-    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
-    updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"p2editProjectDetails":False}})
-
-    if updatedResult.modified_count>=1 or updatedResult2.modified_count>=1:
-        return jsonify({"message":"Success"})
-    else:
-        return jsonify({'message': 'Fail'})
+    if student == "p2":
+        try:
+            filter2 = {"mailId":mailid}
+            updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
+            updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"p2editProjectDetails":False}})
+        except Exception as e:
+            print(e)
+        if updatedResult2.modified_count>=1:
+            return jsonify({"message":"Success"})
+        else:
+            return jsonify({'message': 'Fail'})
     
 
 @app.route("/staffLogin/check/<string:mailId>/<string:password1>", methods=["POST"])
