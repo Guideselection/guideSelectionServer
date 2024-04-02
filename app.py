@@ -1035,8 +1035,9 @@ def updateProjectDetails(mailid):
     data = request.json
     updatedData = data.get("updatedData")
     student = data.get("student")
+    teamId = data.get("teamId")
     registeredStudentsData = db['registeredStudentsData']
-    filter = {"mailId":mailid}
+    filter = {"teamId":teamId}
     if student == "p1":
         try:
             print(filter)
