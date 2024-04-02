@@ -1052,7 +1052,7 @@ def updateProjectDetails(mailid):
 
     if student == "p2":
         try:
-            filter2 = {"mailId":mailid}
+            filter2 = {"teamId":teamId}
             updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
             updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"p2editProjectDetails":False}})
         except Exception as e:
