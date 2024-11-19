@@ -24,6 +24,10 @@ from google.oauth2 import service_account
 app=Flask(__name__)
 CORS(app)
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 #Google Mail Service
 # app = Flask(__name__)
@@ -40,7 +44,7 @@ app.config['MAIL_PORT'] = 2525
 # app.config['MAIL_USE_TLS'] = False
 # app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'guideselectionportal@cse-soc.com'  # Replace with your email address
-app.config['MAIL_PASSWORD'] = 'AB9F5833D7A214A633D1C4BF37F6F1C9413A'  # Replace with your email password
+app.config['MAIL_PASSWORD'] = str(os.getenv("MAIL_PASSWORD")) # Replace with your email password
 
 
 
@@ -48,11 +52,11 @@ mail = Mail(app)
 
 
 
-client = MongoClient('mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net/SIST_Courses?retryWrites=true&w=majority')
+client = MongoClient(str(os.getenv("MONGO_URI")))
+# print(os.getenv("MONGO_URI"))
 
-# mongodb+srv://PradeeP1G:Pradeep%402003@cluster0.50omidk.mongodb.net
 
-db = client.SIST_Courses
+db = client.cse_gsp_21_25
 
 CORS(app)
 
@@ -154,7 +158,7 @@ def update_all_data():
 
 
 
-secret_key = 'SathyabamaInstituteOfScienceAndTechnology'
+secret_key = str(os.getenv("SECRET_KEY"))
 
 def generate_token(email):
     # Define the payload for the token (you can include additional claims if needed)
@@ -200,21 +204,23 @@ def check_account_avalable(mail):
 
 
 
-@app.route('/api/check/<string:mailid>/<string:password>', methods=['GET'])
-def check_data(mailid,password):
+@app.route('/api/check/<string:mailid>/<string:password1>', methods=['POST'])
+def check_data(mailid,password1):
     # Get the update data from the request
-
-
+    data = request.json
+    password = data.get("passcode")
     if str(mailid)[:6]=="CSE-25":
         filter = {"teamId":mailid}
         collection = db.users  # Replace <collection_name> with the name of your collection
         result = collection.find_one(filter)
 
-        token = generate_token(result["email"])
+        # token = generate_token(result["email"])
 
         if result is None:
             return jsonify({'is_account_available': "false"})
         else:
+            token = generate_token(result["email"])
+            
             if str(password)==str(result['password']):
                 return jsonify({'is_account_available': "true",
                                 "is_password_correct":"true",
@@ -374,6 +380,7 @@ def get_Guide_List():
     for document in data:
         result.append({})
         result[i]["id"] = i+1
+        result[i]["SL"] = document["SL"]["NO"]
         result[i]["NAME"] = document["NAME OF THE FACULTY"]
         result[i]["VACANCIES"] = document["TOTAL BATCHES"]
         result[i]["DESIGNATION"] = document["DESIGNATION"]
@@ -900,9 +907,11 @@ def getStudentdata(mailid):
     # Initialize an empty list to store the results
     studentData = []
     projectDetails = []
+    projectDetails2 = []
     projectStatus = []
     documentation = []
     comments = []
+    comments2 = []
     studentImage2=""
     studentImage1=""
 
@@ -931,15 +940,28 @@ def getStudentdata(mailid):
                 "p2mailId":student["p2mailId"],
                 "teamId":student["teamId"],
                 "editProjectDetails":student["editProjectDetails"],
+                "editProjectDetails2":student.get("p2editProjectDetails",False),
                 "section":student["section"],
                 "p2section":student["p2section"],
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
 
+            projectDetails2.append({
+            "projectTitle": student.get("p2projectTitle",""),
+            "projectDesc": student.get("p2projectDesc",""),
+            "projectDomain": student.get("p2projectDomain","")
+        })
+            
+            comments2.append(student.get("p2comments",[]))
             studentImage1 = student["image"]
             studentImage2 = student["p2image"]
         else:
+            comments2.append(student.get("p2comments",[]))
+            projectDetails2.append({
+            "projectTitle": student.get("p2projectTitle",""),
+            "projectDesc": student.get("p2projectDesc",""),
+            "projectDomain": student.get("p2projectDomain","")})
             studentData.append({
             # "student_id": str(student["_id"]),
                 "name": student["name"],
@@ -949,6 +971,7 @@ def getStudentdata(mailid):
                 "teamId":student["teamId"],
                 "section":student["section"],
                 "editProjectDetails":student["editProjectDetails"],
+                "editProjectDetails2":student.get("p2editProjectDetails",False),
                 "selectedGuide":student["selectedGuide"],
                 "selectedGuideMailId":student["selectedGuideMailId"]
             })
@@ -995,33 +1018,55 @@ def getStudentdata(mailid):
     return jsonify({    
                         "studentData":studentData,
                         "projectDetails":projectDetails,
+                        "projectDetails2":projectDetails2,
                         "projectStatus":projectStatus,
                         "documentation":documentation,
                         "guideImage":guideImage,
                         "comments":comments[0],
+                        "comments2":comments2[0],
                         "studentImage1":studentImage1,
                         "studentImage2":studentImage2,
                         "problemStatements":ps
                     })
 
 
-
 @app.route("/studentLogin/updateProjectDetails/<string:mailid>", methods=["POST"])
 def updateProjectDetails(mailid):
-    updatedData = request.json
+    data = request.json
+    updatedData = data.get("updatedData")
+    student = data.get("student")
+    teamId = data.get("teamId")
     registeredStudentsData = db['registeredStudentsData']
-    filter = {"mailId":mailid}
-    print(filter)
-    updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
-    updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+    filter = {"teamId":teamId}
+    if student == "p1":
+        try:
+            print(filter)
+            updatedResult = registeredStudentsData.update_one(filter, {"$set":updatedData})
+            updatedResult = registeredStudentsData.update_one(filter, {"$set":{"editProjectDetails":False}})
+        except Exception as e:
+            print(e)
+        if updatedResult.modified_count>=1:
+            return jsonify({"message":"Success"})
+        else:
+            return jsonify({'message': 'Fail'})
 
-    if updatedResult.modified_count==1:
-        return jsonify({"message":"Success"})
-    else:
-        return jsonify({'message': 'Fail'})
+    if student == "p2":
+        try:
+            filter2 = {"teamId":teamId}
+            updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":updatedData})
+            updatedResult2 = registeredStudentsData.update_one(filter2, {"$set":{"p2editProjectDetails":False}})
+        except Exception as e:
+            print(e)
+        if updatedResult2.modified_count>=1:
+            return jsonify({"message":"Success"})
+        else:
+            return jsonify({'message': 'Fail'})
+    
 
-@app.route("/staffLogin/check/<string:mailId>/<string:password>", methods=["GET"])
-def checkStaffLogin(mailId, password):
+@app.route("/staffLogin/check/<string:mailId>/<string:password1>", methods=["POST"])
+def checkStaffLogin(mailId, password1):
+    data = request.json
+    password = data.get("passcode")
     facultycredentials = db["facultycredentials"]
     filter = {"mailId": mailId}
     result = facultycredentials.find_one(filter)
@@ -1087,7 +1132,6 @@ def getStudentsdata(mailid):
     return jsonify({"message":"fetched successfully", "allStudentsData":allStudentsData, "guideImg":guideImg })
 
 
-
 @app.route("/staffLogin/getProfileData/profile_details/<string:teamid>", methods=["POST"])
 def getTeamdetails(teamid):
     registeredStudentsData = db['registeredStudentsData']
@@ -1107,7 +1151,8 @@ def getTeamdetails(teamid):
         "title": team_data["projectTitle"],
         "desc": team_data["projectDesc"],
         "domain": team_data["projectDomain"],
-        "projectApproval":team_data["editProjectDetails"]
+        "projectApproval":team_data["editProjectDetails"],
+        
     })
 
     guidedetails.append({
@@ -1141,6 +1186,7 @@ def getTeamdetails(teamid):
         "studentDetailsTwo" : studentdetailstwo[0],
         "projectdetails": projectdetails[0],
         "guidedetails": guidedetails[0],
+        "type":team_data.get("projectType","")
     })
 
     else:
@@ -1158,8 +1204,87 @@ def getTeamdetails(teamid):
             "studentDetailsOne": studentdetailsone[0],
             "projectdetails": projectdetails[0],
             "guidedetails": guidedetails[0],
+            "type":team_data.get("projectType","")
         })
     
+
+
+
+@app.route("/staffLogin/getProfileData/profile_details2/<string:teamid>", methods=["POST"])
+def getTeamdetails2(teamid):
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
+    team_data = registeredStudentsData.find_one(filter)
+    if not team_data:
+        return jsonify({"error": "Team not found"}), 404
+
+    studentdetailsone = []
+    studentdetailstwo = []
+
+    projectdetails = []
+    guidedetails = []
+
+
+    projectdetails.append({
+        "title": team_data.get("p2projectTitle",""),
+        "desc": team_data.get("p2projectDesc",""),
+        "domain": team_data.get("p2projectDomain",""),
+        "projectApproval":team_data.get("p2editProjectDetails","")
+    })
+
+    guidedetails.append({
+        "projectId": team_data["teamId"],
+        "guideName": team_data["selectedGuide"],
+        "guideMaidId": team_data["selectedGuideMailId"]
+    })
+
+
+    if team_data["team"]:
+        studentdetailsone.append({
+            "imgOne":team_data["image"],
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "secOne": team_data["section"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+        })
+        studentdetailstwo.append({
+            "team": team_data["team"],            
+            "fullNameTwo": team_data["p2name"],
+            "regNoTwo": team_data["p2regNo"],
+            "mobileNoTwo": team_data["p2phoneNo"],
+            "emailTwo": team_data["p2mailId"],
+            "secTwo": team_data["p2section"],
+            "imgTwo":team_data["p2image"]
+        })
+        return jsonify({
+        "studentDetailsOne": studentdetailsone[0],
+        "studentDetailsTwo" : studentdetailstwo[0],
+        "projectdetails": projectdetails[0],
+        "guidedetails": guidedetails[0],
+        "type":team_data.get("p2projectType","")
+    })
+
+    else:
+        studentdetailsone.append({
+            "fullNameOne": team_data["name"],
+            "team": team_data["team"],
+            "regNoOne": team_data["regNo"],
+            "emailOne": team_data["mailId"],
+            "mobileNoOne": team_data["phoneNo"],
+            "secOne": team_data["section"],
+            "imgOne":team_data["image"]
+        })
+
+        return jsonify({
+            "studentDetailsOne": studentdetailsone[0],
+            "projectdetails": projectdetails[0],
+            "guidedetails": guidedetails[0],
+            "type":team_data.get("p2projectType","")
+        })
+    
+
 
 @app.route("/staffLogin/getProfileData/<string:teamid>", methods=["POST"])
 def get_profile_data(teamid):
@@ -1179,6 +1304,8 @@ def get_profile_data(teamid):
     guideApproval=[]
     isChecked = []
     comments = []
+    comments2 = []
+
 
 
    
@@ -1257,6 +1384,8 @@ def get_profile_data(teamid):
 
 
         comments.append(team["comments"])
+        comments2.append(team.get("p2comments",[]))
+
 
  
 
@@ -1271,11 +1400,10 @@ def get_profile_data(teamid):
                         "researchPaper":researchPaper[0],
                         "ppt":ppt[0],
                         "guideApproval":guideApproval[0],
-                        "comments":comments[0]
+                        "comments":comments[0],
+                        "comments2":comments2[0]
+
                     })
-
-
-
 @app.route("/staffLogin/updateProjectDetails/<string:teamid>", methods=["POST"])
 def updateProjectDetailsStatus(teamid):
     updatedData = request.json
@@ -1298,10 +1426,28 @@ def updateProjectDetailsStatus(teamid):
     else:
         return jsonify({"message": "Fail"})
 
-    
 
+@app.route("/staffLogin/updateProjectDetails2/<string:teamid>", methods=["POST"])
+def updateProjectDetailsStatus2(teamid):
+    updatedData = request.json
+    registeredStudentsData = db['registeredStudentsData']
+    filter = {"teamId": teamid}
 
+    approval_status = updatedData.get("approvalStatus", "")
 
+    # updatedResult = registeredStudentsData.update_one(filter, {"$set": updatedData})
+
+    if approval_status == "approved":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"p2editProjectDetails": False}})
+    elif approval_status == "declined":
+        updatedResult = registeredStudentsData.update_one(filter, {"$set": {"p2editProjectDetails": True}})
+    else:
+        pass
+
+    if updatedResult.modified_count == 1:
+        return jsonify({"message": "Success"})
+    else:
+        return jsonify({"message": "Fail"})
 
 
 
@@ -1362,6 +1508,10 @@ def updatestatusDetails(teamid):
         today_date: data.get("editedComments", ""),
     }
 
+    comment2 = {
+        today_date: data.get("editedComments2", ""),
+    }
+
     try:
         if comment[today_date]=="":
             pass
@@ -1370,6 +1520,15 @@ def updatestatusDetails(teamid):
             filter,
             {"$push": {"comments": comment}},
         )
+            
+        if comment2[today_date]=="":
+            pass
+        else:
+            registeredStudentsData.update_one(
+            filter,
+            {"$push": {"p2comments": comment2}},
+        )
+            
 
         # Update status and push comment to the 'comments' array
         registeredStudentsData.update_one(
@@ -1393,8 +1552,6 @@ def updatestatusDetails(teamid):
         return jsonify({"message": "Success"})
     except:
         return jsonify({"message": "Fail"})
-
-
 
 
 # Google Drive API credentials
@@ -1645,6 +1802,7 @@ def selectStudentDirectlyByStaff(mailid):
         
             # print(user)
         except Exception as e:
+            print({"error":"register no not found"})
             return jsonify({"message":"Fail", "error":"register no not found"})
 
 
@@ -1671,6 +1829,7 @@ def selectStudentDirectlyByStaff(mailid):
                     }
                 )
             except Exception as e:
+                print({"message":"Fail", "error":"student is already selected"})
                 return jsonify({"message":"Fail", "error":"student is already selected"})
             try:
 
@@ -1765,7 +1924,12 @@ def selectStudentDirectlyByStaff(mailid):
 
                 # Update the data in the collection
                 
+                # result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+                vacancies = document["TOTAL BATCHES"]
+                maxTeams  = document["MAX TEAMS"]
+                
                 result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
+                result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': {"MAX TEAMS":maxTeams-1, "TOTAL BATCHES":vacancies-1}})
 
                 try:
                     msg = Message(f'Guide Selection Confirmation',  # Email subject
@@ -1775,7 +1939,7 @@ def selectStudentDirectlyByStaff(mailid):
                     <html>
                     <body>
                         <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
-                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
                         <b>Guide Details:</b><br/>
                         <ul>
                         <li>Guide Name - {collection_data["selectedGuide"]}</li>
@@ -1786,6 +1950,9 @@ def selectStudentDirectlyByStaff(mailid):
                         <li>Project Id - {teamiId}</li>
                         <li>Password - {data.get("password")}</li>
                         </ul><br/>
+                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                        <br/>
+                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
                         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
                         <p>Best Regards,</p>
                         <p>School of Computing,</p>
@@ -1805,6 +1972,7 @@ def selectStudentDirectlyByStaff(mailid):
                 print(e)
                 return jsonify({"message":"Fail", "error":"failed to select student"})
         else:
+            print({"message":"Fail", "error":"register no not found"})
             return jsonify({"message":"Fail", "error":"register no not found"})
         pass
     else:
@@ -1927,7 +2095,7 @@ def selectStudentDirectlyByStaff(mailid):
                     <html>
                     <body>
                         <p>Dear {collection_data['name']},</p>
-                        <p>We are pleased to inform you that a guide has been selected for your project. You are now required to log in to the student dashboard and view the problem statements provided by your guide. Please submit your project title, domain, and a brief description based on the problem statements provided.</p>
+                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
                         <b>Guide Details:</b><br/>
                         <ul>
                         <li>Guide Name - {collection_data["selectedGuide"]}</li>
@@ -1938,6 +2106,9 @@ def selectStudentDirectlyByStaff(mailid):
                         <li>Project Id - {teamiId}</li>
                         <li>Password - {data.get("password")}</li>
                         </ul><br/>
+                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                        <br/>
+                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
                         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
                         <p>Best Regards,</p>
                         <p>School of Computing,</p>
