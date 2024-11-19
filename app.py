@@ -2143,6 +2143,93 @@ def fetchmaxteam(mailid):
     })
 
 
+@app.route("/adminLogin/check", methods=["POST"])
+def checkAdminLogin():
+    
+    data = request.json
+    print(data)
+
+    if str(data["email"])==os.getenv("ADMIN_MAILID"):
+        token = generate_token(data["email"])
+        if str(data["password"])==os.getenv("ADMIN_PASSWORD"):
+            return jsonify({"is_account_available":"true", "Is_Password_Correct":"true", "token":token})
+        else:
+            return jsonify({"is_account_available":"true", "Is_Password_Correct":"false" })
+    else:
+        return jsonify({"is_account_available":"false", "Is_Password_Correct":"false" })
+
+
+teams_collection = db["registeredStudentsData"]  # Collection where team data is stored
+users_collection = db["users"]  # Users collection
+registered_users_collection = db["registeredUsers"]  # Registered users collection
+faculty_list_collection = db["facultylist"]  # Faculty list collection
+individual_registered_collection = db["individulregdata"]
+
+@app.route("/deleteTeam", methods=["POST"])
+def deleteTeam():
+    data = request.json
+    teamId = data["teamId"]
+
+    try:
+        # Step 1: Remove the document from the "teams" collection and store the `guidemailid`
+        team = teams_collection.find_one_and_delete({"teamId": teamId})
+        if not team:
+            return jsonify({"error": f"Team with ID {teamId} not found"}), 404
+        
+        guidemailid = team["selectedGuideMailId"]
+        studentmails = [team["mailId"]]
+        if team['team']:
+            studentmails.append(team["p2mailId"])
+
+        print("step1 success")
+
+
+        # Step 2: Update the "users" collection
+        users_collection.update_many(
+            {"teamId": teamId},
+            {"$unset": {"teamId": ""}, "$set": {"firstTime": True}}
+        )
+
+        print("step2 success")
+
+
+        # Step 3: Remove records from the "registeredusers" collection
+        registered_users_collection.delete_many({"teamId": teamId})
+
+        print("step3 success")
+
+
+        # Step 4: Update the "facultylist" collection
+        print(guidemailid)
+        faculty_list_collection.update_one(
+            {"University EMAIL ID": guidemailid},
+            {
+                "$inc": {
+                    "TOTAL BATCHES": 1,
+                    "MAX TEAMS": 1
+                },
+                "$pull": {
+                    "allTeams": str(teamId),
+                    "allStudents": {"$in": studentmails}
+                }
+            }
+        )
+
+        print("step4 success")
+
+
+        # Step 5: Remove records from the "registeredusers" collection
+        # individual_registered_collection.delete_many({"Team ID": teamId})
+
+        print("step5 success")
+
+
+
+        return jsonify({"message": f"Successfully removed team {teamId} and updated related records"}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
 
 
 
