@@ -1931,41 +1931,43 @@ def selectStudentDirectlyByStaff(mailid):
                 result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': updated_data})
                 result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': {"MAX TEAMS":maxTeams-1, "TOTAL BATCHES":vacancies-1}})
 
-                try:
-                    msg = Message(f'Guide Selection Confirmation',  # Email subject
-                                sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
-                                recipients=[user.get("email"), user2.get("email")])  # Replace with the recipient's email address
-                    msg.html = f"""
-                    <html>
-                    <body>
-                        <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
-                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
-                        <b>Guide Details:</b><br/>
-                        <ul>
-                        <li>Guide Name - {collection_data["selectedGuide"]}</li>
-                        </ul><br/>
+                # try:
+                #     msg = Message(f'Guide Selection Confirmation',  # Email subject
+                #                 sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
+                #                 recipients=[user.get("email"), user2.get("email")])  # Replace with the recipient's email address
+                #     msg.html = f"""
+                #     <html>
+                #     <body>
+                #         <p>Dear {collection_data['name']} and {collection_data['p2name']},</p>
+                #         <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
+                #         <b>Guide Details:</b><br/>
+                #         <ul>
+                #         <li>Guide Name - {collection_data["selectedGuide"]}</li>
+                #         </ul><br/>
                         
-                        <ul>
-                        <b>Login Credentials:</b><br/>
-                        <li>Project Id - {teamiId}</li>
-                        <li>Password - {data.get("password")}</li>
-                        </ul><br/>
-                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
-                        <br/>
-                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
-                        <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
-                        <p>Best Regards,</p>
-                        <p>School of Computing,</p>
-                        <p>Sathyabama Institute of Science & Technology</p>
-                    </body>
-                    </html>
-                    """
+                #         <ul>
+                #         <b>Login Credentials:</b><br/>
+                #         <li>Project Id - {teamiId}</li>
+                #         <li>Password - {data.get("password")}</li>
+                #         </ul><br/>
+                #         <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                #         <br/>
+                #         <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
+                #         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
+                #         <p>Best Regards,</p>
+                #         <p>School of Computing,</p>
+                #         <p>Sathyabama Institute of Science & Technology</p>
+                #     </body>
+                #     </html>
+                #     """
 
-                    mail.send(msg)
-                    return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
-                except Exception as e:
-                    print(e)
-                    return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+                #     mail.send(msg)
+                #     return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
+                # except Exception as e:
+                #     print(e)
+                #     return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+
+                return jsonify({"Is_Email_sent":"false", "message":"Success", "status":"Collection created and data inserted successfully!"})
 
             
             except Exception as e:
@@ -2087,41 +2089,42 @@ def selectStudentDirectlyByStaff(mailid):
                 result = faculty_collection.update_one({ "University EMAIL ID": collection_data["selectedGuideMailId"] }, {'$set': {"MAX TEAMS":maxTeams-1, "TOTAL BATCHES":vacancies-1}})
             
                 
-                try:
-                    msg = Message(f'Guide Selection Confirmation',  # Email subject
-                                sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
-                                recipients=[user.get("email")])  # Replace with the recipient's email address
-                    msg.html = f"""
-                    <html>
-                    <body>
-                        <p>Dear {collection_data['name']},</p>
-                        <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
-                        <b>Guide Details:</b><br/>
-                        <ul>
-                        <li>Guide Name - {collection_data["selectedGuide"]}</li>
-                        </ul><br/>
+                # try:
+                #     msg = Message(f'Guide Selection Confirmation',  # Email subject
+                #                 sender='guideselection.cse@sathyabama.ac.in',  # Replace with your email address
+                #                 recipients=[user.get("email")])  # Replace with the recipient's email address
+                #     msg.html = f"""
+                #     <html>
+                #     <body>
+                #         <p>Dear {collection_data['name']},</p>
+                #         <p>We are delighted to announce that a new guide has been assigned to oversee your project. As a result, we kindly request you to log in to the student dashboard at your earliest convenience. Once logged in, please review the problem statements provided by your newly assigned guide.</p>
+                #         <b>Guide Details:</b><br/>
+                #         <ul>
+                #         <li>Guide Name - {collection_data["selectedGuide"]}</li>
+                #         </ul><br/>
                         
-                        <ul>
-                        <b>Login Credentials:</b><br/>
-                        <li>Project Id - {teamiId}</li>
-                        <li>Password - {data.get("password")}</li>
-                        </ul><br/>
-                        <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
-                        <br/>
-                        <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
-                        <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
-                        <p>Best Regards,</p>
-                        <p>School of Computing,</p>
-                        <p>Sathyabama Institute of Science & Technology</p>
-                    </body>
-                    </html>
-                    """
+                #         <ul>
+                #         <b>Login Credentials:</b><br/>
+                #         <li>Project Id - {teamiId}</li>
+                #         <li>Password - {data.get("password")}</li>
+                #         </ul><br/>
+                #         <p>We understand that your previous guide has resigned, and we apologize for any confusion that may have arisen from this transition. Rest assured, your new guide is fully committed to supporting you throughout the remainder of your project.</p>
+                #         <br/>
+                #         <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to contact us.</p>
+                #         <p>Your guide will review your submission and provide further guidance and feedback.</p><br/><br/><br/>
+                #         <p>Best Regards,</p>
+                #         <p>School of Computing,</p>
+                #         <p>Sathyabama Institute of Science & Technology</p>
+                #     </body>
+                #     </html>
+                #     """
 
-                    mail.send(msg)
-                    return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
-                except Exception as e:
-                    print(e)
-                    return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+                #     mail.send(msg)
+                #     return jsonify({"Is_Email_sent":"true", "message":"Success", "status":"Collection created and data inserted successfully!"})
+                # except Exception as e:
+                #     print(e)
+                #     return jsonify({"Is_Email_sent":"false","message": "Collection created and data inserted successfully!"})
+                return jsonify({"Is_Email_sent":"false", "message":"Success", "status":"Collection created and data inserted successfully!"})
 
  
             
